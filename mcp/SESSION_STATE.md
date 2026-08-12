@@ -16,15 +16,17 @@
 - Initial protocol tests under `mcp/tests/test_protocol.py`.
 - GitHub Actions workflow added at `.github/workflows/mcp-tests.yml` to install the package and run the protocol tests on pushes to this branch and on pull requests.
 
-## CI failure and fix in progress
+## CI status
 
-The first GitHub Actions run failed before any protocol test could execute:
+**GREEN — 6/6 protocol tests pass in GitHub Actions.**
+
+The first CI run failed before any protocol test could execute:
 
 `ModuleNotFoundError: No module named 'mcp.server.fastmcp'`
 
-Root cause: the dependency was declared as `mcp>=1.0.0`, which now allows the current MCP SDK v2. The server currently uses the v1 `FastMCP` import path. The dependency has therefore been constrained to `mcp>=1.28,<2` for this MVP rather than silently migrating the server to v2.
+Root cause: the dependency was declared as `mcp>=1.0.0`, which allowed the current MCP SDK v2 while the server uses the v1 `FastMCP` import path. The dependency was constrained to `mcp>=1.28,<2` for this MVP rather than silently migrating the server to v2.
 
-The next CI run must verify that this resolves the import failure and then expose any actual protocol/test failures.
+A subsequent CI run passed all six protocol tests. This is the first verified green baseline for the MVP.
 
 ## Deliberately NOT implemented yet
 
@@ -46,10 +48,9 @@ These are intentionally deferred. Do not silently treat them as solved.
 4. Invalid statuses are rejected.
 5. Search must find event content.
 6. State retrieval must not silently drop older events.
-7. CI must first pass dependency installation/import, then reveal protocol failures.
 
 ## Notes for the next agent/session
 
 This project is being developed as an adversarial/collaborative research workspace between independent LLM agents. The server should preserve disagreement and provenance rather than deciding truth. Agents may bring external evidence and proposals between sessions. The architecture is expected to emerge incrementally from actual use.
 
-Last update: first CI failure identified as an MCP SDK v1/v2 compatibility mismatch; dependency constrained to the v1 SDK line. Awaiting CI verification.
+Last update: CI is green; 6/6 protocol tests pass. Next step is to inspect/review the green baseline and then proceed toward the deferred authentication/remote-MCP work without pretending those pieces already exist.
