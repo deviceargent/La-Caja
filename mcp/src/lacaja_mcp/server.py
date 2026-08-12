@@ -95,7 +95,9 @@ def get_entity(entity_id: str, actor: str = "unknown") -> dict[str, Any]:
     """Return one entity and its complete deliberation history."""
     conn = db()
     row = conn.execute("SELECT * FROM entities WHERE id=?", (entity_id,)).fetchone()
-    events = [dict(r) for r in conn.execute("SELECT * FROM events WHERE entity_id=? ORDER BY created_at").fetchall()]
+    events = [dict(r) for r in conn.execute(
+        "SELECT * FROM events WHERE entity_id=? ORDER BY created_at", (entity_id,)
+    ).fetchall()]
     conn.close()
     if row is None:
         return {"error": "entity_not_found", "entity_id": entity_id}
@@ -131,8 +133,10 @@ def propose(title: str, content: str, actor: str, entity_type: str = "proposal")
     )
     conn.commit()
     conn.close()
-    return {"entity": {"id": entity_id, "type": entity_type, "title": title, "status": "candidate"},
-            "event": event(entity_id, actor, "proposal", content)}
+    return {
+        "entity": {"id": entity_id, "type": entity_type, "title": title, "status": "candidate"},
+        "event": event(entity_id, actor, "proposal", content),
+    }
 
 
 @mcp.tool()
