@@ -25,6 +25,7 @@ def now() -> str:
 def db() -> sqlite3.Connection:
     conn = sqlite3.connect(DB)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
     conn.execute(
         """CREATE TABLE IF NOT EXISTS entities (
             id TEXT PRIMARY KEY,
@@ -43,15 +44,23 @@ def db() -> sqlite3.Connection:
             kind TEXT NOT NULL,
             content TEXT NOT NULL,
             metadata TEXT NOT NULL,
-            created_at TEXT NOT NULL
+            created_at TEXT NOT NULL,
+            FOREIGN KEY(entity_id) REFERENCES entities(id) ON DELETE CASCADE
         )"""
     )
     conn.commit()
     return conn
 
 
+def entity_exists(conn: sqlite3.Connection, entity_id: str) -> bool:
+    return conn.execute("SELECT 1 FROM entities WHERE id=?", (entity_id,)).fetchone() is not None
+
+
 def event(entity_id: str, actor: str, kind: str, content: str, metadata: dict[str, Any] | None = None) -> dict[str, Any]:
     conn = db()
+    if not entity_exists(conn, entity_id):
+        conn.close()
+        return {"error": "entity_not_found", "entity_id": entity_id}
     item = {
         "id": str(uuid.uuid4()),
         "entity_id": entity_id,
@@ -73,10 +82,10 @@ def event(entity_id: str, actor: str, kind: str, content: str, metadata: dict[st
 
 @mcp.tool()
 def get_state(actor: str = "unknown") -> dict[str, Any]:
-    """Return the current research state: entities and recent activity."""
+    """Return the complete research state without silently truncating history."""
     conn = db()
     entities = [dict(r) for r in conn.execute("SELECT * FROM entities ORDER BY updated_at DESC").fetchall()]
-    events = [dict(r) for r in conn.execute("SELECT * FROM events ORDER BY created_at DESC LIMIT 50").fetchall()]
+    events = [dict(r) for r in conn.execute("SELECT * FROM events ORDER BY created_at ASC").fetchall()]
     conn.close()
     return {"actor": actor, "entities": entities, "recent_events": events}
 
@@ -86,7 +95,7 @@ def get_entity(entity_id: str, actor: str = "unknown") -> dict[str, Any]:
     """Return one entity and its complete deliberation history."""
     conn = db()
     row = conn.execute("SELECT * FROM entities WHERE id=?", (entity_id,)).fetchone()
-    events = [dict(r) for r in conn.execute("SELECT * FROM events WHERE entity_id=? ORDER BY created_at", (entity_id,)).fetchall()]
+    events = [dict(r) for r in conn.execute("SELECT * FROM events WHERE entity_id=? ORDER BY created_at").fetchall()]
     conn.close()
     if row is None:
         return {"error": "entity_not_found", "entity_id": entity_id}
@@ -95,7 +104,7 @@ def get_entity(entity_id: str, actor: str = "unknown") -> dict[str, Any]:
 
 @mcp.tool()
 def search_context(query: str, actor: str = "unknown", limit: int = 20) -> dict[str, Any]:
-    """Search entities and deliberation events by simple SQLite text matching."""
+    """Search entity metadata and deliberation event content by SQLite text matching."""
     pattern = f"%{query}%"
     conn = db()
     entities = [dict(r) for r in conn.execute(
@@ -103,8 +112,8 @@ def search_context(query: str, actor: str = "unknown", limit: int = 20) -> dict[
         (pattern, pattern, limit),
     ).fetchall()]
     events = [dict(r) for r in conn.execute(
-        "SELECT * FROM events WHERE content LIKE ? OR kind LIKE ? ORDER BY created_at DESC LIMIT ?",
-        (pattern, pattern, limit),
+        "SELECT * FROM events WHERE content LIKE ? OR kind LIKE ? OR actor LIKE ? ORDER BY created_at DESC LIMIT ?",
+        (pattern, pattern, pattern, limit),
     ).fetchall()]
     conn.close()
     return {"actor": actor, "query": query, "entities": entities, "events": events}
@@ -139,8 +148,7 @@ def update_entity(entity_id: str, status: str, content: str, actor: str) -> dict
     if status not in allowed:
         return {"error": "invalid_status", "allowed": sorted(allowed)}
     conn = db()
-    exists = conn.execute("SELECT 1 FROM entities WHERE id=?", (entity_id,)).fetchone()
-    if exists is None:
+    if not entity_exists(conn, entity_id):
         conn.close()
         return {"error": "entity_not_found", "entity_id": entity_id}
     timestamp = now()
