@@ -116,8 +116,14 @@ export class CajaState extends DurableObject<Env> {
   }
 }
 
+function healthResponse(): Response {
+  return new Response(JSON.stringify({ status: "ok" }), { status: 200, headers: { "content-type": "application/json" } });
+}
+
 export default {
   fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
+    const url = new URL(request.url);
+    if (url.pathname === "/health") return Promise.resolve(healthResponse());
     const actor = actorFromToken(request, env);
     if (!actor) return Promise.resolve(authError());
     const handler = createMcpHandler(() => createServer(env, actor));
