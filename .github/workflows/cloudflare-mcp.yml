@@ -2,7 +2,7 @@ name: La Caja Cloudflare MCP
 
 on:
   push:
-    branches: [cloudflare-mcp]
+    branches: [cloudflare-mcp, main]
   pull_request:
     branches: [cloudflare-mcp, main]
 
