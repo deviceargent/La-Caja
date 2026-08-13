@@ -1,0 +1,21 @@
+{
+  "name": "la-caja-mcp-cloudflare",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/protocol.test.mjs",
+    "typecheck": "tsc --noEmit",
+    "deploy:dry": "wrangler deploy --dry-run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.0.0-beta.5",
+    "agents": "^0.20.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260812.0",
+    "typescript": "^5.9.2",
+    "wrangler": "^4.30.0"
+  }
+}
