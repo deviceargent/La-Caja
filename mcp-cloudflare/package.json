@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test test/protocol.test.mjs",
+    "test": "node --test test/*.test.mjs",
     "typecheck": "tsc --noEmit",
     "deploy:dry": "wrangler deploy --dry-run"
   },
