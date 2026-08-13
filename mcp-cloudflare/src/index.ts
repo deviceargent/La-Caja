@@ -41,7 +41,7 @@ function text(value: unknown): string {
 
 function createServer(env: Env, actor: Actor) {
   const server = new McpServer({ name: "La Caja", version: "0.2.0" });
-  server.registerTool("get_state", { description: "Return the complete research state and immutable deliberation history.", inputSchema: {} }, async () => ({ content: [{ type: "text", text: text(await state(env).execute({ op: "get_state" })) }] }));
+  server.registerTool("get_state", { description: "Return the complete research state and immutable deliberation history." }, async () => ({ content: [{ type: "text", text: text(await state(env).execute({ op: "get_state" })) }] }));
   server.registerTool("get_entity", { description: "Return one entity and its complete deliberation history.", inputSchema: { entity_id: z.string() } }, async ({ entity_id }) => ({ content: [{ type: "text", text: text(await state(env).execute({ op: "get_entity", entity_id })) }] }));
   server.registerTool("search_context", { description: "Search entity metadata and deliberation event content.", inputSchema: { query: z.string(), limit: z.number().int().min(1).max(100).optional() } }, async ({ query, limit }) => ({ content: [{ type: "text", text: text(await state(env).execute({ op: "search_context", query, limit: limit ?? 20 })) }] }));
   server.registerTool("propose", { description: "Create a candidate proposal and preserve its originating argument.", inputSchema: { title: z.string(), content: z.string(), entity_type: z.string().optional() } }, async ({ title, content, entity_type }) => ({ content: [{ type: "text", text: text(await state(env).execute({ op: "propose", title, content, entity_type: entity_type ?? "proposal", actor })) }] }));
@@ -116,10 +116,11 @@ export class CajaState extends DurableObject<Env> {
   }
 }
 
-const handler = createMcpHandler((env: Env, request: Request) => {
-  const actor = actorFromToken(request, env);
-  if (!actor) return null;
-  return createServer(env, actor);
-});
-
-export default { fetch(request: Request, env: Env, ctx: ExecutionContext) { return handler(request, env, ctx); } };
+export default {
+  fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
+    const actor = actorFromToken(request, env);
+    if (!actor) return Promise.resolve(authError());
+    const handler = createMcpHandler(() => createServer(env, actor));
+    return handler.fetch(request);
+  },
+};
