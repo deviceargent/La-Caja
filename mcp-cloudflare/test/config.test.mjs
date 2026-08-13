@@ -7,7 +7,7 @@ const wrangler = await readFile(new URL("../wrangler.jsonc", import.meta.url), "
 const source = await readFile(new URL("../src/index.ts", import.meta.url), "utf8");
 
 test("Cloudflare package uses MCP SDK v2", () => {
-  assert.equal(pkg.dependencies["@modelcontextprotocol/server"], "2.0.0-beta.5");
+  assert.equal(pkg.dependencies["@modelcontextprotocol/server"], "2.0.0");
 });
 
 test("Worker declares a SQLite Durable Object", () => {
