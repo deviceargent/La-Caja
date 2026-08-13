@@ -30,6 +30,6 @@ test("all seven La Caja operations are registered", () => {
 });
 
 test("remote endpoint requires bearer authentication", () => {
-  assert.match(source, /Authorization/);
+  assert.match(source, /authorization/i);
   assert.match(source, /Bearer/);
 });
