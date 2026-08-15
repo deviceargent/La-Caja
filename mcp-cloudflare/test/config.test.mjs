@@ -33,3 +33,23 @@ test("remote endpoint requires bearer authentication", () => {
   assert.match(source, /authorization/i);
   assert.match(source, /Bearer/);
 });
+
+test("OAuth handshake endpoints are wired for the ChatGPT connector flow", () => {
+  for (const routeCheck of [
+    /\/\.well-known\/oauth-authorization-server/,
+    /\/\.well-known\/oauth-protected-resource/,
+    /pathname === "\/register"/,
+    /pathname === "\/authorize"/,
+    /pathname === "\/token"/,
+  ]) {
+    assert.match(source, routeCheck);
+  }
+});
+
+test("OAuth token endpoint hands back the existing CHATGPT_TOKEN, not a newly minted secret", () => {
+  assert.match(source, /access_token:\s*env\.CHATGPT_TOKEN/);
+});
+
+test("OAuth authorize step gates on HUMAN_TOKEN as the approval password", () => {
+  assert.match(source, /password !== env\.HUMAN_TOKEN/);
+});
