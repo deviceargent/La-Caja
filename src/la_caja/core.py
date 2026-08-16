@@ -1,44 +1,54 @@
 """
-Núcleo de La Caja — reescrito (31/7/2026) sobre el modelo real descrito
-por Miguel, reemplazando el diseño anterior (Union-Find plano + cache con
-capacidad fija). Ver /areas/la-caja.md para el historial de la iteración
-anterior — este archivo implementa el modelo de nodos-burbuja.
+Nucleo de La Caja -- modelo canonico (fusion 16/8/2026).
 
-Mecanismo:
-  - Filtro ontológico: descarta metainformación universal (artículos,
-    preposiciones, puntuación) antes de procesar. Solo sustantivos/
-    términos con peso semántico propio generan estructura.
-  - Término nuevo (nunca visto) -> nodo unitario.
-  - Dos términos NUEVOS co-ocurriendo en la misma consulta -> se
-    fusionan en un único nodo (cada uno queda como "burbuja" adentro).
-  - Término nuevo + término YA EXISTENTE co-ocurriendo -> el nuevo se
-    vuelve su propio nodo, y se CONECTA (edge) a la burbuja específica
-    del término existente -- no se absorbe en el nodo viejo. Esto evita
-    que todo termine fusionado en un nodo gigante con el tiempo.
-  - Término repetido (ya existe) -> no crea nada nuevo, sube el peso de
-    su burbuja. Repetición = señal de importancia, no de acumulación.
-  - Fisión: cuando un nodo crece demasiado (peso total o cantidad de
-    burbujas supera un umbral), se separa en un nodo hijo -- "banco
-    cercano" -- conectado al padre, en vez de perder la relación. No
-    implementado como automático todavía: es una pasada de optimización
-    separada (piscina.optimizar()), no bloqueante, para correr entre
-    consultas.
-  - Las cajas NO son almacenamiento persistente. Son procesadores de
-    tránsito ("procesadores suaves") que sostienen términos solo
-    mientras los analizan (clasificar nuevo/existente, ajustar peso,
-    detectar co-ocurrencia) y le informan el resultado a la piscina.
-    No queda estado en la caja después de procesar una consulta.
-  - La piscina es el índice persistente real -- mantiene los nodos, el
-    mapeo término->nodo, y corre la optimización proactiva (fisión,
-    consolidación) como algoritmo aparte, entre consultas.
+Este archivo reemplaza al modelo single-membership (termino_a_nodo 1:1),
+descartado por dos defectos estructurales que el modelo multi-pertenencia
+corrige:
+
+  1. Exilio: un termino solo podia pertenecer a un nodo; co-ocurrir con
+     un segundo contexto lo "exiliaba" del primero, relegandolo a una
+     simple arista.
+  2. Conectividad espuria: la navegacion por membresia compartida
+     conectaba contextos de consultas distintas que nunca co-ocurrieron
+     (un termino-hub puenteando todo en pocos saltos).
+
+Mecanismo del modelo canonico:
+  - Burbuja: un termino, entidad persistente con peso propio y pertenencia
+    a MULTIPLES nodos (burbujas dentro de/acopladas a burbujas). Nunca se
+    exilia.
+  - Nodo: un contexto de co-ocurrencia -- el conjunto de terminos que
+    co-ocurrieron dentro de una misma ventana de consulta.
+  - Termino nuevo -> nodo unitario {t}.
+  - nuevo+nuevo co-ocurriendo en la ventana -> fusion en UN nodo.
+  - nuevo+existente co-ocurriendo -> el nuevo conserva su unitario y
+    ambos entran en un nodo compartido nuevo. Sin arista: un concepto
+    recien nacido no fabrica rutas de navegacion.
+  - existente+existente co-ocurriendo sin nodo comun -> ARISTA explicita
+    entre sus nodos: una relacion observada entre conceptos ya
+    establecidos. Es la UNICA forma de crear aristas.
+  - repetido -> refuerza peso de la burbuja.
+  - conectados(a, b): mismo nodo -> True. Si no, BFS sobre ARISTAS
+    explicitas. Compartir termino en consultas distintas NO conecta.
+
+Regla de oro (decision 16/8/2026, registrada en el MCP remoto):
+  PERTENENCIA = activacion/primado de contexto. ARISTA = navegacion.
+  No mezclar. Las dos nociones de "conectado" (cadena de terminos
+  compartidos vs arista explicita) no conviven bajo ninguna regla
+  consistente -- el caso doom3->idtech4->netradiant y el puente
+  primero->td->ultimo son estructuralmente identicos. Se eligio arista
+  explicita: rutas observadas y validadas, no atajos implicitos.
+
+Pendientes abiertos (no decididos por este archivo):
+  - fision de nodos (optimizar() solo lista candidatos, no divide)
+  - criterio de capacidad de caja
+  - persistencia en disco (la Piscina event-sourced la resolveria)
 """
 import re
-import uuid
 from collections import deque
 
 
 FILTRO_ONTOLOGICO_DEFAULT = {
-    # artículos
+    # articulos
     "el", "la", "los", "las", "un", "una", "unos", "unas",
     # preposiciones comunes
     "de", "del", "a", "al", "en", "con", "por", "para", "sin", "sobre",
@@ -50,162 +60,163 @@ FILTRO_ONTOLOGICO_DEFAULT = {
     "tiene", "es", "son", "esta", "está", "hay",
 }
 
+VENTANA_COOCURRENCIA = 4
+
 
 def _tokenizar(texto):
-    """Extrae palabras, sin puntuación, en minúsculas."""
+    """Extrae palabras, sin puntuacion, en minusculas."""
     return re.findall(r"[a-záéíóúñü]+", texto.lower())
 
 
 class Burbuja:
-    """Un término, con su peso (cuántas veces reforzado)."""
+    """Un termino. Entidad persistente: vive una sola vez, con su peso y
+    el conjunto de nodos a los que pertenece (multi-membresia)."""
 
     def __init__(self, termino):
         self.termino = termino
         self.peso = 1
+        self.nodos = set()  # ids de nodos a los que pertenece
 
     def reforzar(self):
         self.peso += 1
 
 
 class Nodo:
-    """Contenedor de una o más burbujas relacionadas por co-ocurrencia.
-    Puede tener nodos hijos (fisión) y un padre si él mismo es resultado
-    de una fisión."""
+    """Un contexto de co-ocurrencia. Referencia burbujas (muchos-a-muchos)
+    y tiene aristas explicitas hacia otros nodos (navegacion)."""
 
-    def __init__(self, nodo_id=None):
-        self.id = nodo_id or str(uuid.uuid4())[:8]
-        self.burbujas = {}  # termino -> Burbuja
-        self.conexiones = set()  # ids de otros nodos conectados (edges)
-        self.nodo_padre = None
-        self.nodos_hijos = set()
+    _seq = 0
 
-    def agregar_burbuja(self, termino):
-        self.burbujas[termino] = Burbuja(termino)
+    def __init__(self):
+        Nodo._seq += 1
+        self.id = f"n{Nodo._seq}"
+        self.burbujas = set()  # terminos
+        self.aristas = set()  # ids de otros nodos (sin transitividad de membresia)
 
-    def peso_total(self):
-        return sum(b.peso for b in self.burbujas.values())
+    def agregar(self, termino):
+        self.burbujas.add(termino)
 
 
 class Piscina:
-    """Índice persistente: nodos + mapeo término->nodo. Mantiene y
+    """Indice persistente: burbujas + nodos + aristas. Mantiene y
     optimiza la estructura; las cajas solo le informan eventos."""
 
     UMBRAL_FISION_PESO = 50  # placeholder, ajustable
     UMBRAL_FISION_BURBUJAS = 20
 
     def __init__(self):
-        self.nodos = {}  # nodo_id -> Nodo
-        self.termino_a_nodo = {}  # termino -> nodo_id
+        self.burbujas = {}  # termino -> Burbuja
+        self.nodos = {}     # id -> Nodo
 
     def existe(self, termino):
-        return termino in self.termino_a_nodo
+        return termino in self.burbujas
 
-    def nodo_de(self, termino):
-        nodo_id = self.termino_a_nodo.get(termino)
-        return self.nodos.get(nodo_id) if nodo_id else None
+    def nodos_de(self, termino):
+        b = self.burbujas.get(termino)
+        return set(b.nodos) if b else set()
 
-    def crear_nodo_unitario(self, termino):
-        nodo = Nodo()
-        nodo.agregar_burbuja(termino)
-        self.nodos[nodo.id] = nodo
-        self.termino_a_nodo[termino] = nodo.id
-        return nodo
+    def comparten_nodo(self, a, b):
+        return bool(self.nodos_de(a) & self.nodos_de(b))
 
-    def reforzar_termino(self, termino):
-        nodo = self.nodo_de(termino)
-        if nodo and termino in nodo.burbujas:
-            nodo.burbujas[termino].reforzar()
+    def _nuevo_nodo(self, *terminos):
+        n = Nodo()
+        for t in terminos:
+            n.agregar(t)
+            self.burbujas[t].nodos.add(n.id)
+        self.nodos[n.id] = n
+        return n
 
-    def fusionar_en_nodo_unico(self, termino_a, termino_b):
-        """Caso: ambos términos son nuevos. Se crea UN nodo con ambos
-        como burbujas."""
-        nodo = Nodo()
-        nodo.agregar_burbuja(termino_a)
-        nodo.agregar_burbuja(termino_b)
-        self.nodos[nodo.id] = nodo
-        self.termino_a_nodo[termino_a] = nodo.id
-        self.termino_a_nodo[termino_b] = nodo.id
-        return nodo
+    def crear_unitario(self, termino):
+        return self._nuevo_nodo(termino)
 
-    def conectar_termino_nuevo_a_existente(self, termino_nuevo, termino_existente):
-        """Caso: uno es nuevo, el otro ya vive en algún nodo. El nuevo
-        se vuelve su propio nodo unitario, conectado (edge) al nodo del
-        existente -- sin absorberse en él."""
-        nodo_nuevo = self.crear_nodo_unitario(termino_nuevo)
-        nodo_existente = self.nodo_de(termino_existente)
-        if nodo_existente:
-            nodo_nuevo.conexiones.add(nodo_existente.id)
-            nodo_existente.conexiones.add(nodo_nuevo.id)
-        return nodo_nuevo
+    def crear_compartido(self, a, b):
+        return self._nuevo_nodo(a, b)
 
-    def conectar_existentes(self, termino_a, termino_b):
-        """Caso: ambos ya existen (en el mismo nodo o distintos). Si
-        están en nodos distintos, se conectan por edge (no se fusionan)."""
-        nodo_a = self.nodo_de(termino_a)
-        nodo_b = self.nodo_de(termino_b)
-        if nodo_a and nodo_b and nodo_a.id != nodo_b.id:
-            nodo_a.conexiones.add(nodo_b.id)
-            nodo_b.conexiones.add(nodo_a.id)
+    def fusionar(self, nodo_ids):
+        """Une varios nodos en uno solo (caso nuevo+nuevo)."""
+        nuevo = Nodo()
+        for nid in nodo_ids:
+            n = self.nodos[nid]
+            for t in n.burbujas:
+                nuevo.agregar(t)
+                self.burbujas[t].nodos.discard(nid)
+                self.burbujas[t].nodos.add(nuevo.id)
+            for otro_id in n.aristas:
+                if otro_id not in nodo_ids:
+                    nuevo.aristas.add(otro_id)
+                    self.nodos[otro_id].aristas.discard(nid)
+                    self.nodos[otro_id].aristas.add(nuevo.id)
+            del self.nodos[nid]
+        self.nodos[nuevo.id] = nuevo
+        return nuevo
 
-    def conectados(self, termino_a, termino_b, max_saltos=10):
-        """BFS sobre el grafo de NODOS (no de términos crudos) --
-        atraviesa tanto burbujas-dentro-del-mismo-nodo como edges entre
-        nodos distintos, y la jerarquía de fisión (padre/hijos)."""
-        nodo_a = self.nodo_de(termino_a)
-        nodo_b = self.nodo_de(termino_b)
-        if not nodo_a or not nodo_b:
-            return False
-        if nodo_a.id == nodo_b.id:
+    def arista_entre(self, a, b):
+        """Registra una relacion observada entre dos conceptos ya
+        establecidos: arista explicita entre TODOS los pares de sus
+        nodos. Unico lugar donde se crean aristas."""
+        na = sorted(self.nodos_de(a))
+        nb = sorted(self.nodos_de(b))
+        for na_id in na:
+            for nb_id in nb:
+                if na_id != nb_id:
+                    self.nodos[na_id].aristas.add(nb_id)
+                    self.nodos[nb_id].aristas.add(na_id)
+
+    def conectados(self, a, b, max_saltos=10):
+        """NAVEGACION: mismo nodo (co-ocurrencia directa) -> True. Si no,
+        BFS sobre ARISTAS explicitas. Compartir termino en consultas
+        distintas NO conecta."""
+        if a == b:
             return True
-
-        visitados = {nodo_a.id}
-        cola = deque([(nodo_a.id, 0)])
+        if self.comparten_nodo(a, b):
+            return True
+        na = self.nodos_de(a)
+        nb = self.nodos_de(b)
+        if not na or not nb:
+            return False
+        visitados = set(na)
+        cola = deque((nid, 0) for nid in na)
         while cola:
-            actual_id, saltos = cola.popleft()
+            nid, saltos = cola.popleft()
             if saltos >= max_saltos:
                 continue
-            actual = self.nodos[actual_id]
-            vecinos = actual.conexiones | actual.nodos_hijos
-            if actual.nodo_padre:
-                vecinos = vecinos | {actual.nodo_padre}
-            for vecino_id in vecinos:
-                if vecino_id == nodo_b.id:
+            for vecino in self.nodos[nid].aristas:
+                if vecino in nb:
                     return True
-                if vecino_id not in visitados:
-                    visitados.add(vecino_id)
-                    cola.append((vecino_id, saltos + 1))
+                if vecino not in visitados:
+                    visitados.add(vecino)
+                    cola.append((vecino, saltos + 1))
         return False
 
+    def _peso_nodo(self, nid):
+        return sum(self.burbujas[t].peso for t in self.nodos[nid].burbujas)
+
     def optimizar(self):
-        """Pasada de optimización proactiva -- fisión de nodos que
-        crecieron demasiado, consolidación. Pensada para correr entre
-        consultas, no bloqueante. Placeholder: implementación real
-        pendiente, requiere criterio de cuándo/cómo dividir un nodo sin
-        perder las relaciones (banco cercano conectado al padre)."""
-        candidatos_fision = [
-            n for n in self.nodos.values()
-            if n.peso_total() > self.UMBRAL_FISION_PESO
+        """Pasada de optimizacion proactiva -- fision de nodos que
+        crecieron demasiado, consolidacion. Pensada para correr entre
+        consultas, no bloqueante. Placeholder: implementacion real
+        pendiente, requiere criterio de cuando/como dividir un nodo sin
+        perder las relaciones."""
+        candidatos = [
+            n.id for n in self.nodos.values()
+            if self._peso_nodo(n.id) > self.UMBRAL_FISION_PESO
             or len(n.burbujas) > self.UMBRAL_FISION_BURBUJAS
         ]
-        return {"candidatos_fision": [n.id for n in candidatos_fision]}
+        return {"candidatos_fision": candidatos}
 
     def stats(self):
         return {
-            "nodos_totales": len(self.nodos),
-            "terminos_indexados": len(self.termino_a_nodo),
-            "peso_promedio_por_nodo": (
-                sum(n.peso_total() for n in self.nodos.values()) / len(self.nodos)
-                if self.nodos else 0
-            ),
+            "terminos": len(self.burbujas),
+            "nodos": len(self.nodos),
+            "aristas": sum(len(n.aristas) for n in self.nodos.values()) // 2,
         }
 
 
 class Caja:
     """Procesador transitorio, sin estado persistente. Recibe los
-    términos de UNA consulta, los clasifica contra la piscina, detecta
+    terminos de UNA consulta, los clasifica contra la piscina, detecta
     co-ocurrencias, e informa los eventos resultantes. No guarda nada
-    después de retornar -- por eso es un método, no un objeto que vive
-    entre llamadas."""
+    despues de retornar."""
 
     def __init__(self, piscina, filtro_ontologico=None):
         self.piscina = piscina
@@ -218,98 +229,80 @@ class Caja:
                 vistos.append(t)
         return vistos
 
-    VENTANA_COOCURRENCIA = 4  # cuantos terminos previos revisa cada termino, no todo el mensaje
-
     def procesar_terminos(self, terminos):
         """terminos: lista de strings ya tokenizados.
 
-        BUGFIX (02/8/2026): procesamiento SECUENCIAL por ventana, no
-        todos-contra-todos. El diseño anterior comparaba cada termino
-        contra TODOS los demas del mismo mensaje (O(n^2)) -- confirmado
-        con datos reales: 72 mensajes de un export real de ChatGPT
-        generaron 324.677 eventos, dejando solo 72 nodos para 2164
-        terminos indexados (la mayoria nunca formo nodo propio).
-        Ahora cada termino se compara solo contra los N terminos
-        inmediatamente anteriores en la secuencia (ventana), como
-        describio Miguel: las cajitas "estampan" termino por termino,
-        de forma secuencial, no en barrido exhaustivo.
+        Procesamiento SECUENCIAL por ventana (no todos-contra-todos):
+        cada termino se compara solo contra los N terminos inmediatamente
+        anteriores en la secuencia (VENTANA_COOCURRENCIA). Esto evita la
+        explosion O(n^2) que generaba cientos de miles de eventos.
         """
         terminos = self._filtrar(terminos)
         eventos = []
-        clasificacion = {}  # termino -> "nuevo" | "existente", solo para esta consulta
+        recien_creados = set()  # terminos cuya burbuja se creo en esta consulta
 
+        # Pass 1: burbujas + nodos unitarios
         for t in terminos:
             if self.piscina.existe(t):
-                self.piscina.reforzar_termino(t)
+                self.piscina.burbujas[t].reforzar()
                 eventos.append({"tipo": "peso_reforzado", "termino": t})
-                clasificacion[t] = "existente"
             else:
-                self.piscina.crear_nodo_unitario(t)
+                self.piscina.burbujas[t] = Burbuja(t)
+                self.piscina.crear_unitario(t)
+                recien_creados.add(t)
                 eventos.append({"tipo": "nodo_creado", "termino": t})
-                clasificacion[t] = "nuevo"
+
+        # Pass 2: co-ocurrencia por ventana secuencial.
+        # "nuevo" = la burbuja se creo EN ESTA consulta. Solo un termino
+        # que ya existia ANTES de la consulta puede generar aristas.
+        def unitario_fresco(x):
+            ns = self.piscina.nodos_de(x)
+            return len(ns) == 1 and len(self.piscina.nodos[next(iter(ns))].burbujas) == 1
 
         for i, t in enumerate(terminos):
-            ventana = terminos[max(0, i - self.VENTANA_COOCURRENCIA):i]
-            for vecino in ventana:
+            for vecino in terminos[max(0, i - VENTANA_COOCURRENCIA):i]:
                 if vecino == t:
                     continue
-                nodo_t = self.piscina.nodo_de(t)
-                nodo_vecino = self.piscina.nodo_de(vecino)
-                if not nodo_t or not nodo_vecino or nodo_t.id == nodo_vecino.id:
+                if self.piscina.comparten_nodo(t, vecino):
                     continue
-
-                ambos_nuevos = clasificacion.get(t) == "nuevo" and clasificacion.get(vecino) == "nuevo"
-                if ambos_nuevos:
-                    self._fusionar_nodos_unitarios_recien_creados(t, vecino)
+                nuevo_t = t in recien_creados
+                nuevo_v = vecino in recien_creados
+                if nuevo_t and nuevo_v and unitario_fresco(t) and unitario_fresco(vecino):
+                    ns = self.piscina.nodos_de(t) | self.piscina.nodos_de(vecino)
+                    self.piscina.fusionar(ns)
                     eventos.append({"tipo": "fusion_nodo_unico", "terminos": [vecino, t]})
-                    clasificacion[t] = "existente"
-                    clasificacion[vecino] = "existente"
+                elif nuevo_t or nuevo_v:
+                    self.piscina.crear_compartido(vecino, t)
+                    eventos.append({"tipo": "nodo_compartido", "terminos": [vecino, t]})
                 else:
-                    self.piscina.conectar_existentes(t, vecino)
-                    eventos.append({"tipo": "conexion", "terminos": [vecino, t]})
-
+                    self.piscina.arista_entre(t, vecino)
+                    eventos.append({"tipo": "arista", "terminos": [vecino, t]})
         return eventos
-
-    def _fusionar_nodos_unitarios_recien_creados(self, a, b):
-        """Ambos términos acaban de crear nodo unitario propio en esta
-        misma consulta -- los fusiona en un solo nodo con dos burbujas,
-        descartando los dos nodos unitarios previos."""
-        nodo_a = self.piscina.nodo_de(a)
-        nodo_b = self.piscina.nodo_de(b)
-        if not nodo_a or not nodo_b or nodo_a.id == nodo_b.id:
-            return
-        del self.piscina.nodos[nodo_a.id]
-        del self.piscina.nodos[nodo_b.id]
-        self.piscina.fusionar_en_nodo_unico(a, b)
 
 
 class LaCaja:
     """Orquestador de alto nivel: piscina + filtro + procesamiento de
-    consultas completas (texto humano, no solo pares de términos)."""
+    consultas completas (texto humano, no solo pares de terminos)."""
 
     def __init__(self, filtro_ontologico=None):
         self.piscina = Piscina()
-        self.filtro = filtro_ontologico or FILTRO_ONTOLOGICO_DEFAULT
+        self.caja = Caja(self.piscina, filtro_ontologico)
 
     def procesar_consulta(self, texto):
         """Entrada principal: una consulta humana completa (ej:
-        '¿Qué masa tiene el Sol?'). Tokeniza, filtra, procesa con una
+        'Que masa tiene el Sol?'). Tokeniza, filtra, procesa con una
         Caja transitoria."""
         terminos = _tokenizar(texto)
-        caja = Caja(self.piscina, self.filtro)
-        eventos = caja.procesar_terminos(terminos)
+        eventos = self.caja.procesar_terminos(terminos)
         return {"terminos_procesados": terminos, "eventos": eventos}
 
     def declarar_relacion(self, a, b):
-        """API de bajo nivel: declara relación entre dos términos ya
-        dados (no texto crudo). Útil para el bridge MCP / tests."""
-        caja = Caja(self.piscina, self.filtro)
-        eventos = caja.procesar_terminos([a, b])
-        return {"eventos": eventos}
+        """API de bajo nivel: declara relacion entre dos terminos ya
+        dados (no texto crudo). Util para el bridge MCP / tests."""
+        return self.caja.procesar_terminos([a, b])
 
     def consultar(self, a, b):
-        conectado = self.piscina.conectados(a, b)
-        return conectado, "grafo_de_nodos"
+        return self.piscina.conectados(a, b)
 
     def stats(self):
         return self.piscina.stats()
