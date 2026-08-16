@@ -1,5 +1,5 @@
-"""La Caja reference implementation."""
+"""Paquete La Caja -- prototipo de memoria externa con nodos-burbuja."""
+from .core import LaCaja, Piscina, Caja, Nodo, Burbuja
 
-from .core import Box, Node, SuperIndex
-
-__all__ = ["Box", "Node", "SuperIndex"]
+__version__ = "0.3.0"
+__all__ = ["LaCaja", "Piscina", "Caja", "Nodo", "Burbuja"]
