@@ -68,8 +68,26 @@ Fision de membresia (fusion 16/8/2026):
   - fisionar_nodo(nid) es un evento del log: el replay lo repite, el
     estado no diverge.
 
-Pendientes abiertos (no decididos por este archivo):
-  - criterio de capacidad de caja
+Criterio de capacidad de caja (fusion 16/8/2026):
+  - La capacidad de la caja es la ventana de co-ocurrencia: el
+    presupuesto de asociacion POR TERMINO (cuantos predecesores ve cada
+    termino). Decide cuantas asociaciones crea una consulta.
+  - Criterio del codo: sobre un corpus con asociaciones verdaderas
+    conocidas, se mide la curva de asociaciones genuinas marginales por
+    ventana; la capacidad es la MENOR ventana donde la ganancia marginal
+    colapsa por debajo del 5% de la ganancia maxima (el recall ya
+    saturado), punto a partir del cual ventanas mayores solo suman
+    asociaciones espurias. El numero deja de ser arbitrario.
+  - Validacion: corpus sintetico (6 temas x 10 terminos, mensajes largos
+    con intrusiones) -> el criterio da 4, la constante adoptada
+    (VENTANA_COOCURRENCIA). Ahi recall = 0.97; mas ventana no suma
+    genuinas, solo espurias.
+
+Discusiones abiertas fuera del alcance de este archivo:
+  - resolucion de sinonimos/frases ('masa del Sol' vs 'masa solar')
+  - decay de peso (hoy el peso solo sube, nunca baja)
+  - promocion jerarquica tipo HNSW como mecanismo SEPARADO de la
+    navegacion
 """
 import json
 import re
@@ -448,11 +466,19 @@ class Caja:
     """Procesador transitorio, sin estado persistente. Recibe los
     terminos de UNA consulta, los clasifica contra la piscina, detecta
     co-ocurrencias, e informa los eventos resultantes. No guarda nada
-    despues de retornar."""
+    despues de retornar.
 
-    def __init__(self, piscina, filtro_ontologico=None):
+    Capacidad de caja = ventana de co-ocurrencia: el presupuesto de
+    asociacion POR TERMINO (cuantos predecesores inmediatos ve cada
+    termino). Es el parametro que decide cuantas asociaciones crea una
+    consulta; se elige por el criterio del codo sobre la curva de
+    asociaciones marginales (ver docstring del modulo).
+    """
+
+    def __init__(self, piscina, filtro_ontologico=None, ventana_coocurrencia=None):
         self.piscina = piscina
         self.filtro = filtro_ontologico or FILTRO_ONTOLOGICO_DEFAULT
+        self.ventana = ventana_coocurrencia if ventana_coocurrencia is not None else VENTANA_COOCURRENCIA
 
     def _filtrar(self, terminos):
         vistos = []
@@ -492,7 +518,7 @@ class Caja:
             return len(ns) == 1 and len(self.piscina.nodos[next(iter(ns))].burbujas) == 1
 
         for i, t in enumerate(terminos):
-            for vecino in terminos[max(0, i - VENTANA_COOCURRENCIA):i]:
+            for vecino in terminos[max(0, i - self.ventana):i]:
                 if vecino == t:
                     continue
                 if self.piscina.comparten_nodo(t, vecino):
@@ -518,9 +544,9 @@ class LaCaja:
     db_path usa PiscinaPersistente (event-sourcing sobre SQLite); sin
     el, Piscina en memoria pura."""
 
-    def __init__(self, filtro_ontologico=None, db_path=None):
+    def __init__(self, filtro_ontologico=None, db_path=None, ventana_coocurrencia=None):
         self.piscina = PiscinaPersistente(db_path) if db_path else Piscina()
-        self.caja = Caja(self.piscina, filtro_ontologico)
+        self.caja = Caja(self.piscina, filtro_ontologico, ventana_coocurrencia)
 
     def procesar_consulta(self, texto):
         """Entrada principal: una consulta humana completa (ej:

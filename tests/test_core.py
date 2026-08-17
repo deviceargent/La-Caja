@@ -8,7 +8,7 @@ absorcion, nunca exilio), refuerzo de peso, ventana secuencial,
 conectividad estricta por aristas explicitas (membresia compartida NO
 conecta), navegacion multi-salto, cajas sin estado y optimizacion.
 """
-from la_caja import LaCaja, Piscina, Caja, Nodo
+from la_caja import LaCaja, Piscina, Caja, Nodo, VENTANA_COOCURRENCIA
 import sqlite3
 
 
@@ -322,3 +322,105 @@ def test_in_memory_piscina_without_db_path_works_unpersisted():
     la = LaCaja()
     la.procesar_consulta("gravedad masa")
     assert la.consultar("gravedad", "masa") is True
+
+
+def _asociaciones(la, texto):
+    evs = la.procesar_consulta(texto)["eventos"]
+    return sum(1 for e in evs if e["tipo"] in ("fusion_nodo_unico", "nodo_compartido", "arista"))
+
+
+def test_capacidad_ventana_respetada():
+    """La ventana de co-ocurrencia ES la capacidad de la caja: a menor
+    ventana, una consulta crea menos asociaciones."""
+    texto = "primero segundo tercero cuarto quinto sexto septimo octavo noveno decimo onceavo doceavo"
+    la_uno = LaCaja(ventana_coocurrencia=1)
+    la_cuatro = LaCaja(ventana_coocurrencia=4)
+    assert _asociaciones(la_cuatro, texto) > _asociaciones(la_uno, texto)
+
+
+TEMAS_CORPUS = {
+    "astronomia": ["sol", "luna", "planeta", "orbita", "masa", "estrella", "satelite", "cometa", "nebulosa", "galaxia"],
+    "cocina": ["sarten", "horno", "receta", "harina", "fuego", "sal", "aceite", "levadura", "vapor", "azucar"],
+    "fisica": ["gravedad", "energia", "fuerza", "particula", "campo", "velocidad", "carga", "onda", "nucleo", "foton"],
+    "futbol": ["gol", "pelota", "arco", "delantero", "cancha", "tecnico", "arbitro", "defensa", "torneo", "equipo"],
+    "musica": ["nota", "escala", "acorde", "ritmo", "melodia", "tono", "compas", "instrumento", "coro", "partitura"],
+    "medicina": ["celula", "dolor", "tratamiento", "sintoma", "virus", "diagnostico", "pulmon", "dosis", "paciente", "clinica"],
+}
+
+
+def _generar_corpus(n_mensajes=40, semilla=7, largo=18, intrusiones=3, probabilidad_intrusion=0.8):
+    import random
+    rng = random.Random(semilla)
+    temas = list(TEMAS_CORPUS)
+    mensajes = []
+    for _ in range(n_mensajes):
+        tema = rng.choice(temas)
+        msg = list(TEMAS_CORPUS[tema])
+        rng.shuffle(msg)
+        msg = msg[:largo]
+        for _ in range(intrusiones):
+            if rng.random() < probabilidad_intrusion:
+                otro = rng.choice([t for t in temas if t != tema])
+                msg.insert(rng.randrange(len(msg) + 1), rng.choice(TEMAS_CORPUS[otro]))
+        mensajes.append(msg)
+    return mensajes
+
+
+def _pares_genuinos(mensajes):
+    tema_por_termino = {t: tema for tema, ts in TEMAS_CORPUS.items() for t in ts}
+    pares = set()
+    for m in mensajes:
+        for i in range(len(m)):
+            for j in range(i + 1, len(m)):
+                a, b = m[i], m[j]
+                if tema_por_termino[a] == tema_por_termino[b]:
+                    pares.add(frozenset((a, b)))
+    return pares
+
+
+def _genuinas_por_ventana(mensajes, genuinos, ventanas):
+    curva = {}
+    for w in ventanas:
+        piscina = Piscina()
+        caja = Caja(piscina, ventana_coocurrencia=w)
+        capturadas = set()
+        for m in mensajes:
+            for ev in caja.procesar_terminos(m):
+                if ev["tipo"] in ("fusion_nodo_unico", "nodo_compartido", "arista"):
+                    par = frozenset(ev["terminos"])
+                    if par in genuinos:
+                        capturadas.add(par)
+        curva[w] = len(capturadas)
+    return curva
+
+
+def test_capacidad_criterio_codo():
+    """Criterio de capacidad de caja (codo de ganancia marginal): la
+    capacidad es la menor ventana donde la ganancia marginal de
+    asociaciones genuinas colapsa por debajo del 5% de la ganancia
+    maxima. Sobre el corpus de validacion da exactamente la constante
+    adoptada (VENTANA_COOCURRENCIA) -- el numero deja de ser
+    arbitrario, es el resultado del principio. Ademas, en el codo el
+    recall ya esta saturado (>= 0.95)."""
+    import random
+    random.seed(7)
+    mensajes = _generar_corpus()
+    genuinos = _pares_genuinos(mensajes)
+    curva = _genuinas_por_ventana(mensajes, genuinos, range(1, 11))
+
+    marginales = {}
+    for w in range(2, 11):
+        marginales[w] = curva[w] - curva[w - 1]
+    max_marginal = max(marginales.values())
+
+    codo = None
+    for w in range(2, 11):
+        if marginales[w] <= 0.05 * max_marginal:
+            codo = w
+            break
+    assert codo is not None
+
+    recall_en_codo = curva[codo] / len(genuinos)
+    assert recall_en_codo >= 0.95, "en el codo el recall debe estar saturado"
+    assert marginales[codo] <= 0.05 * max_marginal, "en el codo la ganancia marginal colapsa"
+    assert codo == VENTANA_COOCURRENCIA, "la constante canonica debe coincidir con el criterio"
