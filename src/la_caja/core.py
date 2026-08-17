@@ -38,12 +38,29 @@ Regla de oro (decision 16/8/2026, registrada en el MCP remoto):
   primero->td->ultimo son estructuralmente identicos. Se eligio arista
   explicita: rutas observadas y validadas, no atajos implicitos.
 
+Persistencia (fusion 16/8/2026):
+  - PiscinaPersistente (Piscina + event-sourcing sobre SQLite): cada
+    mutacion se registra como (metodo, argumentos) en un log append-only
+    ANTES/junto con aplicarse en memoria; el estado se reconstruye
+    repitiendo los MISMOS metodos, nunca por un algoritmo separado.
+  - Snapshots cada N eventos acotan el costo de replay.
+  - Opt-in: LaCaja(db_path=None) usa Piscina en memoria pura; con
+    db_path usa PiscinaPersistente. Todos los metodos mutantes de Piscina
+    (crear_burbuja, reforzar, crear_unitario, crear_compartido, fusionar,
+    arista_entre) son el unico punto de entrada de mutacion.
+  - El log es tambien el soporte del criterio temporal de la arista
+    estricta: el orden global de nacimiento de burbujas queda persistido.
+
 Pendientes abiertos (no decididos por este archivo):
-  - fision de nodos (optimizar() solo lista candidatos, no divide)
+  - fision de nodos (optimizar() solo lista candidatos, no divide; al
+    implementarla DEBE registrarse como evento del log o derivarse
+    deterministicamente, o el replay divergira del estado canónico)
   - criterio de capacidad de caja
-  - persistencia en disco (la Piscina event-sourced la resolveria)
 """
+import json
 import re
+import sqlite3
+import time
 from collections import deque
 
 
@@ -61,6 +78,10 @@ FILTRO_ONTOLOGICO_DEFAULT = {
 }
 
 VENTANA_COOCURRENCIA = 4
+
+
+def _ahora():
+    return time.strftime("%Y-%m-%dT%H:%M:%S")
 
 
 def _tokenizar(texto):
@@ -110,6 +131,16 @@ class Piscina:
 
     def existe(self, termino):
         return termino in self.burbujas
+
+    def crear_burbuja(self, termino):
+        """Punto de entrada unico de creacion de burbuja (necesario
+        para el event-sourcing: toda mutacion pasa por un metodo)."""
+        self.burbujas[termino] = Burbuja(termino)
+        return self.burbujas[termino]
+
+    def reforzar(self, termino):
+        """Punto de entrada unico de refuerzo de burbuja."""
+        self.burbujas[termino].reforzar()
 
     def nodos_de(self, termino):
         b = self.burbujas.get(termino)
@@ -211,6 +242,147 @@ class Piscina:
             "aristas": sum(len(n.aristas) for n in self.nodos.values()) // 2,
         }
 
+    # -- serializacion para snapshots --
+    def a_dict(self):
+        return {
+            "burbujas": {t: {"peso": b.peso, "nodos": sorted(b.nodos)} for t, b in self.burbujas.items()},
+            "nodos": {nid: {"burbujas": sorted(n.burbujas), "aristas": sorted(n.aristas)} for nid, n in self.nodos.items()},
+        }
+
+    def cargar_dict(self, data):
+        self.burbujas = {}
+        for t, bd in data["burbujas"].items():
+            b = Burbuja(t)
+            b.peso = bd["peso"]
+            b.nodos = set(bd["nodos"])
+            self.burbujas[t] = b
+        self.nodos = {}
+        max_seq = 0
+        for nid, nd in data["nodos"].items():
+            n = Nodo.__new__(Nodo)
+            n.id = nid
+            n.burbujas = set(nd["burbujas"])
+            n.aristas = set(nd["aristas"])
+            self.nodos[nid] = n
+            if nid.startswith("n") and nid[1:].isdigit():
+                max_seq = max(max_seq, int(nid[1:]))
+        Nodo._seq = max_seq
+
+
+class PiscinaPersistente(Piscina):
+    """Piscina con event-sourcing: cada metodo mutante se registra en
+    SQLite (metodo, argumentos) ademas de aplicarse en memoria. Al
+    construirse, carga el ultimo snapshot (si hay) y repite solo los
+    eventos posteriores -- nunca deserializa el estado directo salvo
+    en el punto de snapshot."""
+
+    def __init__(self, db_path, snapshot_cada=1000):
+        super().__init__()
+        self.db = sqlite3.connect(db_path)
+        self.snapshot_cada = snapshot_cada
+        self._eventos_desde_snapshot = 0
+        self._crear_tablas()
+        self._cargar()
+
+    def _crear_tablas(self):
+        self.db.execute("""CREATE TABLE IF NOT EXISTS eventos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            metodo TEXT NOT NULL,
+            argumentos TEXT NOT NULL,
+            creado_en TEXT NOT NULL
+        )""")
+        self.db.execute("""CREATE TABLE IF NOT EXISTS snapshots (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ultimo_evento_id INTEGER NOT NULL,
+            estado TEXT NOT NULL,
+            creado_en TEXT NOT NULL
+        )""")
+        self.db.commit()
+
+    def _registrar(self, metodo, argumentos):
+        self.db.execute(
+            "INSERT INTO eventos (metodo, argumentos, creado_en) VALUES (?, ?, ?)",
+            (metodo, json.dumps(argumentos), _ahora()),
+        )
+        self.db.commit()
+        self._eventos_desde_snapshot += 1
+        if self._eventos_desde_snapshot >= self.snapshot_cada:
+            self.snapshot()
+
+    def crear_burbuja(self, termino):
+        resultado = super().crear_burbuja(termino)
+        self._registrar("crear_burbuja", {"termino": termino})
+        return resultado
+
+    def reforzar(self, termino):
+        super().reforzar(termino)
+        self._registrar("reforzar", {"termino": termino})
+
+    def crear_unitario(self, termino):
+        resultado = super().crear_unitario(termino)
+        self._registrar("crear_unitario", {"termino": termino})
+        return resultado
+
+    def crear_compartido(self, a, b):
+        resultado = super().crear_compartido(a, b)
+        self._registrar("crear_compartido", {"a": a, "b": b})
+        return resultado
+
+    def fusionar(self, nodo_ids):
+        nodo_ids = list(nodo_ids)
+        resultado = super().fusionar(nodo_ids)
+        self._registrar("fusionar", {"nodo_ids": nodo_ids})
+        return resultado
+
+    def arista_entre(self, a, b):
+        super().arista_entre(a, b)
+        self._registrar("arista_entre", {"a": a, "b": b})
+
+    def snapshot(self):
+        ultimo = self.db.execute("SELECT MAX(id) FROM eventos").fetchone()[0] or 0
+        self.db.execute(
+            "INSERT INTO snapshots (ultimo_evento_id, estado, creado_en) VALUES (?, ?, ?)",
+            (ultimo, json.dumps(self.a_dict()), _ahora()),
+        )
+        self.db.commit()
+        self._eventos_desde_snapshot = 0
+
+    def _cargar(self):
+        fila = self.db.execute(
+            "SELECT ultimo_evento_id, estado FROM snapshots ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+        desde_id = 0
+        if fila:
+            desde_id, estado_json = fila
+            self.cargar_dict(json.loads(estado_json))
+
+        filas = self.db.execute(
+            "SELECT metodo, argumentos FROM eventos WHERE id > ? ORDER BY id ASC",
+            (desde_id,),
+        ).fetchall()
+        for metodo, argumentos_json in filas:
+            argumentos = json.loads(argumentos_json)
+            self._aplicar_sin_registrar(metodo, argumentos)
+
+    def _aplicar_sin_registrar(self, metodo, argumentos):
+        """Re-ejecuta un evento del log llamando a los metodos de la
+        clase BASE (Piscina) -- si llamara a los de esta clase,
+        volveria a registrar el evento que ya esta siendo repetido."""
+        if metodo == "crear_burbuja":
+            Piscina.crear_burbuja(self, argumentos["termino"])
+        elif metodo == "reforzar":
+            Piscina.reforzar(self, argumentos["termino"])
+        elif metodo == "crear_unitario":
+            Piscina.crear_unitario(self, argumentos["termino"])
+        elif metodo == "crear_compartido":
+            Piscina.crear_compartido(self, argumentos["a"], argumentos["b"])
+        elif metodo == "fusionar":
+            Piscina.fusionar(self, argumentos["nodo_ids"])
+        elif metodo == "arista_entre":
+            Piscina.arista_entre(self, argumentos["a"], argumentos["b"])
+        else:
+            raise ValueError(f"evento desconocido en el log: {metodo}")
+
 
 class Caja:
     """Procesador transitorio, sin estado persistente. Recibe los
@@ -244,10 +416,10 @@ class Caja:
         # Pass 1: burbujas + nodos unitarios
         for t in terminos:
             if self.piscina.existe(t):
-                self.piscina.burbujas[t].reforzar()
+                self.piscina.reforzar(t)
                 eventos.append({"tipo": "peso_reforzado", "termino": t})
             else:
-                self.piscina.burbujas[t] = Burbuja(t)
+                self.piscina.crear_burbuja(t)
                 self.piscina.crear_unitario(t)
                 recien_creados.add(t)
                 eventos.append({"tipo": "nodo_creado", "termino": t})
@@ -282,10 +454,12 @@ class Caja:
 
 class LaCaja:
     """Orquestador de alto nivel: piscina + filtro + procesamiento de
-    consultas completas (texto humano, no solo pares de terminos)."""
+    consultas completas (texto humano, no solo pares de terminos). Con
+    db_path usa PiscinaPersistente (event-sourcing sobre SQLite); sin
+    el, Piscina en memoria pura."""
 
-    def __init__(self, filtro_ontologico=None):
-        self.piscina = Piscina()
+    def __init__(self, filtro_ontologico=None, db_path=None):
+        self.piscina = PiscinaPersistente(db_path) if db_path else Piscina()
         self.caja = Caja(self.piscina, filtro_ontologico)
 
     def procesar_consulta(self, texto):
