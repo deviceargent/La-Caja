@@ -25,7 +25,11 @@ Mecanismo del modelo canonico:
     recien nacido no fabrica rutas de navegacion.
   - existente+existente co-ocurriendo sin nodo comun -> ARISTA explicita
     entre sus nodos: una relacion observada entre conceptos ya
-    establecidos. Es la UNICA forma de crear aristas.
+    establecidos. Es la UNICA forma de crear aristas. Presupuesto de
+    navegacion: se conectan los contextos mas reforzados de cada
+    termino, acotado a ventana x ventana aristas por observacion (el
+    bipartito completo entre todas las membresias explotaba a millones
+    de aristas en corpus reales).
   - repetido -> refuerza peso de la burbuja.
   - relacion(a, b): confianza en [0, 1]. 1.0 = OBSERVADO (termino
     identico, co-ocurrencia directa, arista explicita entre los
@@ -329,14 +333,26 @@ class Piscina:
 
     def arista_entre(self, a, b):
         """Registra una relacion observada entre dos conceptos ya
-        establecidos: la pareja queda en self.relaciones (para la
-        confianza de consulta) y como arista explicita entre TODOS los
-        pares de sus nodos (para la navegacion). Unico lugar donde se
-        crean aristas."""
+        establecidos: la pareja queda en self.relaciones (confianza 1.0)
+        y como aristas de navegacion entre los VENTANA_COOCURRENCIA
+        contextos (nodos) MAS reforzados de cada termino. Presupuesto de
+        navegacion: conectividad de par completa para grafos pequenos,
+        acotada a K x K aristas por observacion para no explotar (el
+        bipartito completo entre TODAS las membresias llegaba a millones
+        de aristas en corpus reales). Unico lugar donde se crean
+        aristas."""
         self._n_eventos += 1
         self.relaciones.add(tuple(sorted((a, b))))
-        na = sorted(self.nodos_de(a))
-        nb = sorted(self.nodos_de(b))
+        na = sorted(
+            self.nodos_de(a),
+            key=lambda nid: (self._peso_nodo(nid), nid),
+            reverse=True,
+        )[:VENTANA_COOCURRENCIA]
+        nb = sorted(
+            self.nodos_de(b),
+            key=lambda nid: (self._peso_nodo(nid), nid),
+            reverse=True,
+        )[:VENTANA_COOCURRENCIA]
         for na_id in na:
             for nb_id in nb:
                 if na_id != nb_id:

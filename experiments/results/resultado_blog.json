@@ -1,0 +1,151 @@
+{
+  "corpus": "blog",
+  "nombre": "blog (4177216.female.24.Science.Taurus.xml, personal/online)",
+  "documentos": 203,
+  "test_a": {
+    "serie": {
+      "0.25": {
+        "terminos": 1402,
+        "nodos": 9130,
+        "aristas": 43813,
+        "relaciones": 2838,
+        "A1_uniforme": {
+          "n": 400,
+          "frac_conect": 0.3075,
+          "media": 0.0703125,
+          "p95": 0.25
+        },
+        "A1_top": {
+          "n": 400,
+          "frac_conect": 0.775,
+          "media": 0.2528125,
+          "p95": 0.5
+        },
+        "A3_comp_gigante": 0.22792990142387734
+      },
+      "0.5": {
+        "terminos": 2287,
+        "nodos": 15668,
+        "aristas": 126271,
+        "relaciones": 8171,
+        "A1_uniforme": {
+          "n": 400,
+          "frac_conect": 0.315,
+          "media": 0.067890625,
+          "p95": 0.25
+        },
+        "A1_top": {
+          "n": 400,
+          "frac_conect": 0.97,
+          "media": 0.3728125,
+          "p95": 1.0
+        },
+        "A3_comp_gigante": 0.25925453152923156
+      },
+      "0.75": {
+        "terminos": 2789,
+        "nodos": 19522,
+        "aristas": 190876,
+        "relaciones": 12398,
+        "A1_uniforme": {
+          "n": 400,
+          "frac_conect": 0.31,
+          "media": 0.08234375,
+          "p95": 0.25
+        },
+        "A1_top": {
+          "n": 400,
+          "frac_conect": 0.99,
+          "media": 0.408125,
+          "p95": 1.0
+        },
+        "A3_comp_gigante": 0.26360004097940787
+      },
+      "1.0": {
+        "terminos": 3390,
+        "nodos": 9692,
+        "aristas": 106669,
+        "relaciones": 32637,
+        "A1_uniforme": {
+          "n": 400,
+          "frac_conect": 0.9975,
+          "media": 0.126328125,
+          "p95": 0.25
+        },
+        "A1_top": {
+          "n": 400,
+          "frac_conect": 1.0,
+          "media": 0.38265625,
+          "p95": 1.0
+        },
+        "A3_comp_gigante": 0.5613908378043747
+      }
+    },
+    "final": {
+      "terminos": 3390,
+      "nodos": 9692,
+      "aristas": 106669,
+      "relaciones": 32637,
+      "A1_uniforme": {
+        "n": 400,
+        "frac_conect": 0.9975,
+        "media": 0.126328125,
+        "p95": 0.25
+      },
+      "A1_top": {
+        "n": 400,
+        "frac_conect": 1.0,
+        "media": 0.38265625,
+        "p95": 1.0
+      },
+      "A3_comp_gigante": 0.5613908378043747
+    },
+    "veredicto": {
+      "A1": "FALSA",
+      "A2": "FALSA",
+      "A3": "FALSA"
+    }
+  },
+  "test_b": {
+    "precision_pct": 41.2277355421025,
+    "recall": 0.6418175690167601,
+    "n_gt": 42393,
+    "discriminacion": {
+      "obs": 1.1088335324937955,
+      "inf": 0.003355704697986577,
+      "ale": 0.016666666666666666
+    },
+    "veredicto": {
+      "B1": "FALSA",
+      "B2": "ok",
+      "B3": "ok"
+    }
+  },
+  "test_c": {
+    "docs_futuros_con_tema": 82,
+    "consultas": 3216,
+    "hit5_modelo": 0.016181712326615298,
+    "hit5_frecuencia": 0.06467661691542288,
+    "hit5_aleatorio": 0.0017410590079593596,
+    "veredicto": {
+      "C1": "FALSA",
+      "C2": "FALSA"
+    }
+  },
+  "falsacion": {
+    "A": {
+      "A1": "FALSA",
+      "A2": "FALSA",
+      "A3": "FALSA"
+    },
+    "B": {
+      "B1": "FALSA",
+      "B2": "ok",
+      "B3": "ok"
+    },
+    "C": {
+      "C1": "FALSA",
+      "C2": "FALSA"
+    }
+  }
+}

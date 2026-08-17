@@ -1,0 +1,151 @@
+{
+  "corpus": "enron",
+  "nombre": "enron (jeff.dasovich, trabajo)",
+  "documentos": 5042,
+  "test_a": {
+    "serie": {
+      "0.25": {
+        "terminos": 12014,
+        "nodos": 38038,
+        "aristas": 1569335,
+        "relaciones": 198746,
+        "A1_uniforme": {
+          "n": 400,
+          "frac_conect": 0.995,
+          "media": 0.1902734375,
+          "p95": 0.25
+        },
+        "A1_top": {
+          "n": 400,
+          "frac_conect": 1.0,
+          "media": 0.539375,
+          "p95": 1.0
+        },
+        "A3_comp_gigante": 0.7988590357011409
+      },
+      "0.5": {
+        "terminos": 19291,
+        "nodos": 63418,
+        "aristas": 4749836,
+        "relaciones": 477617,
+        "A1_uniforme": {
+          "n": 400,
+          "frac_conect": 0.975,
+          "media": 0.193671875,
+          "p95": 0.25
+        },
+        "A1_top": {
+          "n": 400,
+          "frac_conect": 1.0,
+          "media": 0.66125,
+          "p95": 1.0
+        },
+        "A3_comp_gigante": 0.7892081112617869
+      },
+      "0.75": {
+        "terminos": 23441,
+        "nodos": 74256,
+        "aristas": 7112010,
+        "relaciones": 688156,
+        "A1_uniforme": {
+          "n": 400,
+          "frac_conect": 0.99,
+          "media": 0.204765625,
+          "p95": 0.25
+        },
+        "A1_top": {
+          "n": 400,
+          "frac_conect": 1.0,
+          "media": 0.680625,
+          "p95": 1.0
+        },
+        "A3_comp_gigante": 0.8277714932126696
+      },
+      "1.0": {
+        "terminos": 26283,
+        "nodos": 78404,
+        "aristas": 8787705,
+        "relaciones": 869489,
+        "A1_uniforme": {
+          "n": 400,
+          "frac_conect": 1.0,
+          "media": 0.202734375,
+          "p95": 0.25
+        },
+        "A1_top": {
+          "n": 400,
+          "frac_conect": 1.0,
+          "media": 0.709375,
+          "p95": 1.0
+        },
+        "A3_comp_gigante": 0.8618948012856487
+      }
+    },
+    "final": {
+      "terminos": 26283,
+      "nodos": 78404,
+      "aristas": 8787705,
+      "relaciones": 869489,
+      "A1_uniforme": {
+        "n": 400,
+        "frac_conect": 1.0,
+        "media": 0.202734375,
+        "p95": 0.25
+      },
+      "A1_top": {
+        "n": 400,
+        "frac_conect": 1.0,
+        "media": 0.709375,
+        "p95": 1.0
+      },
+      "A3_comp_gigante": 0.8618948012856487
+    },
+    "veredicto": {
+      "A1": "FALSA",
+      "A2": "FALSA",
+      "A3": "FALSA"
+    }
+  },
+  "test_b": {
+    "precision_pct": 36.27903554003564,
+    "recall": 0.601608530987741,
+    "n_gt": 1011639,
+    "discriminacion": {
+      "obs": 3.0943255176316202,
+      "inf": 0.0,
+      "ale": 0.0033333333333333335
+    },
+    "veredicto": {
+      "B1": "FALSA",
+      "B2": "ok",
+      "B3": "ok"
+    }
+  },
+  "test_c": {
+    "docs_futuros_con_tema": 2017,
+    "consultas": 218196,
+    "hit5_modelo": 0.009113243397165393,
+    "hit5_frecuencia": 0.027424884049203468,
+    "hit5_aleatorio": 0.0002104015417632075,
+    "veredicto": {
+      "C1": "FALSA",
+      "C2": "FALSA"
+    }
+  },
+  "falsacion": {
+    "A": {
+      "A1": "FALSA",
+      "A2": "FALSA",
+      "A3": "FALSA"
+    },
+    "B": {
+      "B1": "FALSA",
+      "B2": "ok",
+      "B3": "ok"
+    },
+    "C": {
+      "C1": "FALSA",
+      "C2": "FALSA"
+    }
+  }
+}
