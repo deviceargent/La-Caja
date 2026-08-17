@@ -313,7 +313,7 @@ def test_no_direct_bypass_of_piscina_internals(tmp_path):
 
     metodos = {fila[0] for fila in la.piscina.db.execute("SELECT metodo FROM eventos").fetchall()}
     assert "crear_burbuja" in metodos
-    assert metodos <= {"crear_burbuja", "reforzar", "crear_unitario", "crear_compartido", "fusionar", "arista_entre", "fisionar_nodo"}
+    assert metodos <= {"crear_burbuja", "reforzar", "crear_unitario", "crear_compartido", "fusionar", "arista_entre", "fisionar_nodo", "fijar_peso"}
 
 
 def test_in_memory_piscina_without_db_path_works_unpersisted():
@@ -424,3 +424,65 @@ def test_capacidad_criterio_codo():
     assert recall_en_codo >= 0.95, "en el codo el recall debe estar saturado"
     assert marginales[codo] <= 0.05 * max_marginal, "en el codo la ganancia marginal colapsa"
     assert codo == VENTANA_COOCURRENCIA, "la constante canonica debe coincidir con el criterio"
+
+
+def test_decay_reduces_weight_of_unused_term():
+    """Olvido por no-uso: un termino no reforzado por demasiados
+    eventos pierde peso; el reforzado recientemente lo conserva."""
+    la = LaCaja()
+    la.piscina.UMBRAL_DECAY_EVENTOS = 5
+    la.procesar_consulta("alfa")   # nace
+    la.procesar_consulta("beta")   # nace
+    la.procesar_consulta("beta")   # refuerza
+    la.procesar_consulta("gamma")
+    la.procesar_consulta("gamma")
+    la.procesar_consulta("alfa")   # refuerza alfa recientemente
+    la.procesar_consulta("delta")
+
+    la.optimizar()
+
+    assert la.piscina.burbujas["beta"].peso == 1, "beta sin uso reciente debe decaer"
+    assert la.piscina.burbujas["alfa"].peso == 2, "alfa reforzado recientemente conserva peso"
+    assert la.piscina.burbujas["gamma"].peso == 2, "gamma con uso reciente conserva peso"
+
+
+def test_decay_never_drops_below_floor():
+    """El piso de olvido: un termino de peso 1 (solo su rastro) nunca
+    desaparece del indice -- el peso no baja de 1."""
+    la = LaCaja()
+    la.piscina.UMBRAL_DECAY_EVENTOS = 2
+    la.procesar_consulta("x")
+    la.procesar_consulta("y")
+    la.procesar_consulta("y")
+    la.procesar_consulta("z")
+    la.procesar_consulta("z")
+    la.procesar_consulta("z")
+
+    la.optimizar()
+
+    assert la.piscina.burbujas["x"].peso == 1
+    assert la.piscina.burbujas["z"].peso == 3, "z usado al final no decae"
+
+
+def test_decay_survives_restart_byte_identical(tmp_path):
+    """decay se registra en el log (fijar_peso): tras reiniciar, el
+    replay reconstruye el estado post-olvido byte a byte."""
+    db_path = str(tmp_path / "piscina.db")
+    _reset_id_sequence()
+    la1 = LaCaja(db_path=db_path)
+    la1.piscina.UMBRAL_DECAY_EVENTOS = 5
+    la1.procesar_consulta("alfa")
+    la1.procesar_consulta("beta")
+    la1.procesar_consulta("beta")
+    la1.procesar_consulta("gamma")
+    la1.procesar_consulta("gamma")
+    la1.procesar_consulta("alfa")
+    la1.procesar_consulta("delta")
+    la1.optimizar()
+    estado = la1.piscina.a_dict()
+    la1.piscina.db.close()
+
+    _reset_id_sequence()
+    la2 = LaCaja(db_path=db_path)
+    assert la2.piscina.a_dict() == estado
+    assert la2.piscina.burbujas["beta"].peso == 1

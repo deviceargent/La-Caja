@@ -47,7 +47,8 @@ Persistencia (fusion 16/8/2026):
   - Opt-in: LaCaja(db_path=None) usa Piscina en memoria pura; con
     db_path usa PiscinaPersistente. Todos los metodos mutantes de Piscina
     (crear_burbuja, reforzar, crear_unitario, crear_compartido, fusionar,
-    arista_entre, fisionar_nodo) son el unico punto de entrada de mutacion.
+    arista_entre, fisionar_nodo, fijar_peso) son el unico punto de
+    entrada de mutacion.
   - El log es tambien el soporte del criterio temporal de la arista
     estricta: el orden global de nacimiento de burbujas queda persistido.
 
@@ -83,9 +84,26 @@ Criterio de capacidad de caja (fusion 16/8/2026):
     (VENTANA_COOCURRENCIA). Ahi recall = 0.97; mas ventana no suma
     genuinas, solo espurias.
 
+Decay de peso / olvido (fusion 16/8/2026):
+  - Cierra el hueco que la discusion dejo señalado: el peso solo subia,
+    nunca bajaba. Para memoria humana, el olvido por no-uso es
+    esencial: un termino no reforzado por demasiados eventos pierde
+    peso hacia un piso.
+  - Determinismo para el event-sourcing: la staleness se mide en
+    CONTEO DE EVENTOS del log (n_eventos - ultimo_evento), no en reloj
+    de pared, para que el replay reconstruya exactamente el mismo
+    estado. Cada burbuja registra ultimo_evento (nacimiento o ultimo
+    refuerzo); decaer() es pura lectura de estado y delega el cambio en
+    fijar_peso, que el event-sourcing registra.
+  - Piso: el peso nunca baja de 1 -- el rastro de que el termino existe
+    no desaparece; solo se desactiva la fuerza de su asociacion.
+  - Regla concreta: peso -> max(piso, peso - max(1, peso//2)) cuando
+    la staleness supera UMBRAL_DECAY_EVENTOS. decaer() corre al inicio
+    de optimizar() (consolidacion), antes de la fision, para que los
+    pesos de la fision sean los efectivos.
+
 Discusiones abiertas fuera del alcance de este archivo:
   - resolucion de sinonimos/frases ('masa del Sol' vs 'masa solar')
-  - decay de peso (hoy el peso solo sube, nunca baja)
   - promocion jerarquica tipo HNSW como mecanismo SEPARADO de la
     navegacion
 """
@@ -129,6 +147,7 @@ class Burbuja:
         self.termino = termino
         self.peso = 1
         self.nodos = set()  # ids de nodos a los que pertenece
+        self.ultimo_evento = 0  # evento del log de nacimiento o ultimo refuerzo
 
     def reforzar(self):
         self.peso += 1
@@ -155,10 +174,14 @@ class Piscina:
     optimiza la estructura; las cajas solo le informan eventos."""
 
     UMBRAL_FISION_MEMBRESIAS = 8
+    UMBRAL_DECAY_EVENTOS = 50  # eventos de no-uso antes de olvidar
+    FACTOR_DECAY = 2  # olvido: el peso se reduce a la mitad hacia el piso
+    PISO_DECAY = 1  # el rastro del termino no desaparece nunca
 
     def __init__(self):
         self.burbujas = {}  # termino -> Burbuja
         self.nodos = {}     # id -> Nodo
+        self._n_eventos = 0  # contador de mutaciones (escala del olvido)
 
     def existe(self, termino):
         return termino in self.burbujas
@@ -166,12 +189,23 @@ class Piscina:
     def crear_burbuja(self, termino):
         """Punto de entrada unico de creacion de burbuja (necesario
         para el event-sourcing: toda mutacion pasa por un metodo)."""
-        self.burbujas[termino] = Burbuja(termino)
-        return self.burbujas[termino]
+        self._n_eventos += 1
+        b = Burbuja(termino)
+        b.ultimo_evento = self._n_eventos
+        self.burbujas[termino] = b
+        return b
 
     def reforzar(self, termino):
         """Punto de entrada unico de refuerzo de burbuja."""
-        self.burbujas[termino].reforzar()
+        self._n_eventos += 1
+        b = self.burbujas[termino]
+        b.ultimo_evento = self._n_eventos
+        b.reforzar()
+
+    def fijar_peso(self, termino, peso):
+        """Fija el peso de una burbuja (consolidacion / olvido). NO
+        cuenta como evento de uso: no avanza la staleness."""
+        self.burbujas[termino].peso = peso
 
     def nodos_de(self, termino):
         b = self.burbujas.get(termino)
@@ -189,13 +223,16 @@ class Piscina:
         return n
 
     def crear_unitario(self, termino):
+        self._n_eventos += 1
         return self._nuevo_nodo(termino)
 
     def crear_compartido(self, a, b):
+        self._n_eventos += 1
         return self._nuevo_nodo(a, b)
 
     def fusionar(self, nodo_ids):
         """Une varios nodos en uno solo (caso nuevo+nuevo)."""
+        self._n_eventos += 1
         nuevo = Nodo()
         for nid in nodo_ids:
             n = self.nodos[nid]
@@ -216,6 +253,7 @@ class Piscina:
         """Registra una relacion observada entre dos conceptos ya
         establecidos: arista explicita entre TODOS los pares de sus
         nodos. Unico lugar donde se crean aristas."""
+        self._n_eventos += 1
         na = sorted(self.nodos_de(a))
         nb = sorted(self.nodos_de(b))
         for na_id in na:
@@ -272,6 +310,7 @@ class Piscina:
         n = self.nodos[nid]
         if len(n.burbujas) < 2:
             return None
+        self._n_eventos += 1
         terminos = sorted(n.burbujas)
         unitarios = {v: self._unitario_de(v) for v in terminos}
         for v in terminos:
@@ -287,12 +326,28 @@ class Piscina:
                 self.nodos[b].aristas.add(a)
         return unitarios
 
+    def decaer(self, umbral=None):
+        """Olvido determinista por no-uso: un termino no reforzado por
+        mas de `umbral` eventos pierde peso hacia el piso (nunca baja de
+        PISO_DECAY). La staleness se mide en conteo de eventos del log
+        (determinista para el replay), no en reloj de pared. Pura
+        lectura de estado: cada cambio se delega en fijar_peso, que el
+        event-sourcing registra."""
+        umbral = umbral if umbral is not None else self.UMBRAL_DECAY_EVENTOS
+        decaidos = []
+        for t, b in self.burbujas.items():
+            if self._n_eventos - b.ultimo_evento > umbral and b.peso > self.PISO_DECAY:
+                nuevo = max(self.PISO_DECAY, b.peso - max(1, b.peso // self.FACTOR_DECAY))
+                self.fijar_peso(t, nuevo)
+                decaidos.append(t)
+        return {"decaidos": decaidos}
+
     def optimizar(self, max_membresias=None):
         """Pasada de consolidacion entre consultas, no bloqueante:
-        para cada termino cuya membresa acumulada supera el limite,
-        demote las membresias compartidas mas debiles (menor peso
-        combinado) hasta volver al limite. Cada demote fisiona el nodo
-        en unitarios + arista de par. Devuelve los nodos fisionados."""
+        1) olvido: decaer() los terminos no reforzados; 2) fision: para
+        cada termino con membresias sobre el limite, demote las mas
+        debiles hasta volver al limite. Devuelve decaidos y fisionados."""
+        decaidos = self.decaer().get("decaidos", [])
         limite = max_membresias if max_membresias is not None else self.UMBRAL_FISION_MEMBRESIAS
         fisionados = []
         for t in sorted(self.burbujas):
@@ -303,7 +358,7 @@ class Piscina:
                 debil = min(compartidos, key=lambda nid: (self._peso_nodo(nid), nid))
                 if self.fisionar_nodo(debil) is not None:
                     fisionados.append(debil)
-        return {"fisionados": fisionados}
+        return {"decaidos": decaidos, "fisionados": fisionados}
 
     def stats(self):
         return {
@@ -315,16 +370,19 @@ class Piscina:
     # -- serializacion para snapshots --
     def a_dict(self):
         return {
-            "burbujas": {t: {"peso": b.peso, "nodos": sorted(b.nodos)} for t, b in self.burbujas.items()},
+            "_n_eventos": self._n_eventos,
+            "burbujas": {t: {"peso": b.peso, "nodos": sorted(b.nodos), "ultimo_evento": b.ultimo_evento} for t, b in self.burbujas.items()},
             "nodos": {nid: {"burbujas": sorted(n.burbujas), "aristas": sorted(n.aristas)} for nid, n in self.nodos.items()},
         }
 
     def cargar_dict(self, data):
+        self._n_eventos = data.get("_n_eventos", 0)
         self.burbujas = {}
         for t, bd in data["burbujas"].items():
             b = Burbuja(t)
             b.peso = bd["peso"]
             b.nodos = set(bd["nodos"])
+            b.ultimo_evento = bd.get("ultimo_evento", 0)
             self.burbujas[t] = b
         self.nodos = {}
         max_seq = 0
@@ -414,6 +472,10 @@ class PiscinaPersistente(Piscina):
             self._registrar("fisionar_nodo", {"nid": nid})
         return resultado
 
+    def fijar_peso(self, termino, peso):
+        super().fijar_peso(termino, peso)
+        self._registrar("fijar_peso", {"termino": termino, "peso": peso})
+
     def snapshot(self):
         ultimo = self.db.execute("SELECT MAX(id) FROM eventos").fetchone()[0] or 0
         self.db.execute(
@@ -458,6 +520,8 @@ class PiscinaPersistente(Piscina):
             Piscina.arista_entre(self, argumentos["a"], argumentos["b"])
         elif metodo == "fisionar_nodo":
             Piscina.fisionar_nodo(self, argumentos["nid"])
+        elif metodo == "fijar_peso":
+            Piscina.fijar_peso(self, argumentos["termino"], argumentos["peso"])
         else:
             raise ValueError(f"evento desconocido en el log: {metodo}")
 
