@@ -486,3 +486,62 @@ def test_decay_survives_restart_byte_identical(tmp_path):
     la2 = LaCaja(db_path=db_path)
     assert la2.piscina.a_dict() == estado
     assert la2.piscina.burbujas["beta"].peso == 1
+
+
+def test_sinonimo_canoniza_y_refuerza_mismo_concepto():
+    """'masa del sol' y 'masa solar' convergen al mismo concepto: la
+    piscina solo ve conceptos canonicos, y 'sol' refuerza una sola
+    entidad -- 'solar' no fragmenta la memoria."""
+    la = LaCaja()
+    la.procesar_consulta("masa del sol")
+    la.procesar_consulta("masa solar")
+
+    assert "solar" not in la.piscina.burbujas, "la forma superficial no debe quedar en el indice"
+    assert la.piscina.burbujas["sol"].peso == 2, "sol se refuerza por ambas formas"
+    assert la.consultar("masa", "sol") is True
+
+
+def test_sinonimo_morfologico_seguro():
+    """Morfologia derivativa: 'lunar' se canoniza a 'luna' (raiz con
+    vocal restaurada) SOLO porque la raiz ya existe. No inventa."""
+    la = LaCaja()
+    la.procesar_consulta("luna")
+    la.procesar_consulta("masa lunar")
+
+    assert "lunar" not in la.piscina.burbujas
+    assert la.piscina.burbujas["luna"].peso == 2
+    assert la.consultar("masa", "luna") is True
+
+
+def test_sinonimo_no_inventa_si_raiz_no_existe():
+    """La morfologia NO fabrica conceptos: si la raiz no existe, la
+    forma nace normal -- 'musical' sin 'musica' previa queda como
+    burbuja propia. (Los alias, en cambio, son identidad declarada y
+    aplican incondicionalmente.)"""
+    la = LaCaja()
+    la.procesar_consulta("nota musical")
+
+    assert "musical" in la.piscina.burbujas
+    assert "musica" not in la.piscina.burbujas
+
+
+def test_sinonimo_declarable_en_runtime():
+    """Los alias son extensibles en runtime via declarar_sinonimo."""
+    la = LaCaja()
+    la.declarar_sinonimo("vela", "bujia")
+    la.procesar_consulta("masa del sol")
+    la.procesar_consulta("la vela")
+
+    assert "vela" not in la.piscina.burbujas
+    assert "bujia" in la.piscina.burbujas
+
+
+def test_sinonimo_en_declarar_relacion():
+    """declarar_relacion normaliza a conceptos canonicos antes de
+    procesar: 'solar' se resuelve a 'sol'."""
+    la = LaCaja()
+    la.procesar_consulta("sol")
+    la.declarar_relacion("solar", "masa")
+
+    assert "solar" not in la.piscina.burbujas
+    assert la.consultar("masa", "sol") is True

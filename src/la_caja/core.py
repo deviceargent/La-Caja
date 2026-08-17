@@ -102,8 +102,22 @@ Decay de peso / olvido (fusion 16/8/2026):
     de optimizar() (consolidacion), antes de la fision, para que los
     pesos de la fision sean los efectivos.
 
+Resolucion de sinonimos / identidad (fusion 16/8/2026):
+  - Capa de identidad pre-caja en LaCaja: la piscina SOLO ve conceptos
+    canonicos. 'masa del sol' y 'masa solar' convergen al mismo concepto
+    (sol), que refuerza y navega como una sola entidad; 'sol' y 'solar'
+    dejan de fragmentar la memoria.
+  - Dos mecanismos deterministicos: (1) ALIASES_SINONIMOS, mapa
+    declarativo extensible (solar->sol, lunar->luna); (2) morfologia
+    derivativa SEGURA: un token con sufijo adjetival (-ar, -al, -ico,
+    -ivo, -ino) se canoniza a su raiz SOLO si esa raiz ya existe como
+    burbuja -- no inventa conceptos; si la raiz no existe, la forma
+    nace normal. Con restauracion de vocal nominal (lunar->lun->luna).
+  - La normalizacion vive en el orquestador (LaCaja), no en la Caja:
+    la Caja sigue siendo un procesador transitorio puro. La resolucion
+    es por consulta (contra el estado pre-consulta de la piscina).
+
 Discusiones abiertas fuera del alcance de este archivo:
-  - resolucion de sinonimos/frases ('masa del Sol' vs 'masa solar')
   - promocion jerarquica tipo HNSW como mecanismo SEPARADO de la
     navegacion
 """
@@ -128,6 +142,33 @@ FILTRO_ONTOLOGICO_DEFAULT = {
 }
 
 VENTANA_COOCURRENCIA = 4
+
+# Sinonimos declarativos: forma superficial -> concepto canonico.
+# Extensible en runtime via LaCaja.declarar_sinonimo().
+ALIASES_SINONIMOS = {
+    "solar": "sol",
+    "lunar": "luna",
+    "estelar": "estrella",
+    "terrestre": "tierra",
+    "gravitacional": "gravedad",
+    "energetico": "energia",
+}
+
+# Sufijos adjetivales derivativos (espanol). La morfologia solo
+# canoniza cuando la raiz ya existe como burbuja: nunca inventa.
+SUFIJOS_ADJETIVALES = ("ar", "al", "ico", "ivo", "ino")
+
+
+def _raices_derivativas(token):
+    """Raices candidatas de un adjetivo derivado de sustantivo: el token
+    menos el sufijo, y esa raiz con vocales nominales restauradas
+    (solar->sol, lunar->lun->luna, musical->music->musica)."""
+    for suf in SUFIJOS_ADJETIVALES:
+        if token.endswith(suf) and len(token) - len(suf) >= 2:
+            base = token[: -len(suf)]
+            yield base
+            for vocal in ("a", "o", "e"):
+                yield base + vocal
 
 
 def _ahora():
@@ -612,17 +653,37 @@ class LaCaja:
         self.piscina = PiscinaPersistente(db_path) if db_path else Piscina()
         self.caja = Caja(self.piscina, filtro_ontologico, ventana_coocurrencia)
 
+    def normalizar_termino(self, termino):
+        """Resuelve una forma superficial a su concepto canonico: alias
+        declarados primero; si no, morfologia derivativa segura (solo
+        canoniza si la raiz ya existe como burbuja)."""
+        if termino in ALIASES_SINONIMOS:
+            return ALIASES_SINONIMOS[termino]
+        for raiz in _raices_derivativas(termino):
+            if self.piscina.existe(raiz):
+                return raiz
+        return termino
+
+    def declarar_sinonimo(self, forma, canon):
+        """Registra un alias forma->canon en runtime (extiende
+        ALIASES_SINONIMOS)."""
+        ALIASES_SINONIMOS[forma] = canon
+
     def procesar_consulta(self, texto):
         """Entrada principal: una consulta humana completa (ej:
-        'Que masa tiene el Sol?'). Tokeniza, filtra, procesa con una
-        Caja transitoria."""
+        'Que masa tiene el Sol?'). Tokeniza, normaliza a conceptos
+        canonicos, filtra, procesa con una Caja transitoria."""
         terminos = _tokenizar(texto)
+        terminos = [self.normalizar_termino(t) for t in terminos]
         eventos = self.caja.procesar_terminos(terminos)
         return {"terminos_procesados": terminos, "eventos": eventos}
 
     def declarar_relacion(self, a, b):
         """API de bajo nivel: declara relacion entre dos terminos ya
-        dados (no texto crudo). Util para el bridge MCP / tests."""
+        dados (no texto crudo). Normaliza a conceptos canonicos antes
+        de procesar. Util para el bridge MCP / tests."""
+        a = self.normalizar_termino(a)
+        b = self.normalizar_termino(b)
         return self.caja.procesar_terminos([a, b])
 
     def consultar(self, a, b):
