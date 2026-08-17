@@ -45,8 +45,8 @@ def test_three_new_cooccurring_terms_all_gain_membership():
     la.procesar_consulta("gravedad masa energia")
 
     assert len(la.piscina.nodos_de("energia")) == 3
-    assert la.consultar("gravedad", "energia") is True
-    assert la.consultar("masa", "energia") is True
+    assert la.consultar("gravedad", "energia") == 1.0
+    assert la.consultar("masa", "energia") == 1.0
 
 
 def test_no_exile_term_participates_in_multiple_groups():
@@ -82,8 +82,8 @@ def test_term_accumulates_three_memberships_across_queries():
 
     nodos = la.piscina.nodos_de("sol")
     assert len(nodos) == 3, f"nodos={sorted(nodos)}"
-    assert la.consultar("sol", "masa") is True
-    assert la.consultar("sol", "luna") is True
+    assert la.consultar("sol", "masa") == 1.0
+    assert la.consultar("sol", "luna") == 1.0
 
 
 def test_repeated_term_reinforces_weight_without_creating_new_nodes():
@@ -112,7 +112,7 @@ def test_unrelated_terms_are_not_connected():
     la.procesar_consulta("gravedad")
     la.procesar_consulta("banana")
 
-    assert la.consultar("gravedad", "banana") is False
+    assert la.consultar("gravedad", "banana") == 0
 
 
 def test_cooccurrence_window_does_not_directly_connect_distant_terms():
@@ -136,7 +136,7 @@ def test_cross_query_shared_term_bridge_does_not_connect():
     la.procesar_consulta("primero td")
     la.procesar_consulta("ultimo td")
 
-    assert la.consultar("primero", "ultimo") is False
+    assert la.consultar("primero", "ultimo") == 0
 
 
 def test_navigation_requires_explicit_edge_between_established_concepts():
@@ -144,17 +144,55 @@ def test_navigation_requires_explicit_edge_between_established_concepts():
     conceptos YA ESTABLECIDOS co-ocurren -- nunca por compartir un
     termino."""
     la = LaCaja()
-    la.procesar_consulta("doom3")
-    la.procesar_consulta("idtech4")
-    la.procesar_consulta("netradiant")
-    assert la.consultar("doom3", "netradiant") is False, "sin relacion observada deben estar aislados"
+    la.procesar_consulta("rojo")
+    la.procesar_consulta("verde")
+    la.procesar_consulta("azul")
+    assert la.consultar("rojo", "azul") == 0, "sin relacion observada deben estar aislados"
 
-    la.declarar_relacion("doom3", "idtech4")
-    la.declarar_relacion("idtech4", "netradiant")
+    la.declarar_relacion("rojo", "verde")
+    la.declarar_relacion("verde", "azul")
 
-    assert la.consultar("doom3", "idtech4") is True
-    assert la.consultar("idtech4", "netradiant") is True
-    assert la.consultar("doom3", "netradiant") is True, "ruta multi-salto por aristas observadas"
+    assert la.consultar("rojo", "verde") == 1.0, "la arista explicita es una observacion"
+    assert la.consultar("verde", "azul") == 1.0
+    assert la.consultar("rojo", "azul") == 0.25, "dos puentes cruzados = inferencia, jamas 1.0"
+
+
+def test_relacion_distingue_observado_de_inferido():
+    """El caso motor+piano: la asociacion abstracta es MEMORIA (1.0),
+    pero el par nunca vinculado (cilindro-nota) es INFERENCIA por
+    cierre transitivo (0.5) -- recuperable, jamas igual a un recuerdo."""
+    la = LaCaja()
+    la.procesar_consulta("motor cilindro bujia")
+    la.procesar_consulta("piano escala nota")
+    assert la.consultar("cilindro", "nota") == 0, "topicos aislados antes del cruce"
+
+    la.procesar_consulta("motor del piano")
+
+    assert la.consultar("motor", "piano") == 1.0, "el cruce honesto es una observacion"
+    assert la.consultar("cilindro", "nota") == 0.5, "cilindro-nota cruza el puente observado: inferida"
+
+
+def test_relacion_multi_salto_decrece_con_la_distancia():
+    """Cada puente observado cruzado divide la confianza por 2."""
+    la = LaCaja()
+    for t in ["alfa", "beta", "gamma", "delta"]:
+        la.procesar_consulta(t)
+    la.declarar_relacion("alfa", "beta")
+    la.declarar_relacion("beta", "gamma")
+    la.declarar_relacion("gamma", "delta")
+
+    assert la.consultar("alfa", "beta") == 1.0
+    assert la.consultar("beta", "gamma") == 1.0
+    assert la.consultar("alfa", "gamma") == 0.25
+    assert la.consultar("alfa", "delta") == 0.125
+
+
+def test_relacion_directa_por_membresia_es_observada():
+    """La co-ocurrencia directa (membresia compartida) es tan observada
+    como la arista explicita: confianza 1.0, sin inferencia."""
+    la = LaCaja()
+    la.procesar_consulta("masa energia")
+    assert la.consultar("masa", "energia") == 1.0
 
 
 def test_caja_holds_no_state_the_pool_does():
@@ -194,8 +232,8 @@ def test_fission_demotes_weak_memberships_to_precise_edges(tmp_path):
     assert len(resultado["fisionados"]) > 0
 
     # las relaciones demotadas siguen navegables por arista de par
-    assert la.consultar("masa", "planeta") is True
-    assert la.consultar("masa", "tierra") is True
+    assert la.consultar("masa", "planeta") == 1.0
+    assert la.consultar("masa", "tierra") == 1.0
     # pero ya no son activacion conjunta (membresia compartida)
     assert not la.piscina.comparten_nodo("masa", "planeta")
 
@@ -270,7 +308,27 @@ def test_connectivity_and_weights_survive_restart(tmp_path):
     la2 = LaCaja(db_path=db_path)
 
     assert la2.piscina.burbujas["gravedad"].peso == 2
-    assert la2.consultar("doom3", "netradiant") is True
+    assert la2.consultar("doom3", "netradiant") > 0, "la ruta inferida sobrevive al restart"
+    assert la2.consultar("doom3", "idtech4") == 1.0, "la pareja observada se restaura desde el log"
+
+
+def test_replay_determinista_con_piscina_previa_en_el_mismo_proceso(tmp_path):
+    """Los ids del log son absolutos: reconstruir una piscina persistente
+    no debe depender del contador Nodo._seq que hayan avanzado otras
+    piscinas en el mismo proceso (sin _reset_id_sequence a proposito)."""
+    la = LaCaja()
+    la.procesar_consulta("basura calefactor")
+    db_path = str(tmp_path / "piscina.db")
+
+    la1 = LaCaja(db_path=db_path)
+    la1.procesar_consulta("motor cilindro bujia")
+    la1.procesar_consulta("piano escala nota")
+    la1.procesar_consulta("motor del piano")
+    la1.piscina.db.close()
+
+    la2 = LaCaja(db_path=db_path)
+    assert la2.consultar("motor", "piano") == 1.0, "la pareja observada se restaura desde el log"
+    assert la2.consultar("cilindro", "nota") == 0.5, "la inferencia se reconstruye identica"
 
 
 def test_snapshot_bounds_replay_to_events_after_it(tmp_path):
@@ -321,7 +379,7 @@ def test_in_memory_piscina_without_db_path_works_unpersisted():
     persistencia es opt-in, no obligatoria."""
     la = LaCaja()
     la.procesar_consulta("gravedad masa")
-    assert la.consultar("gravedad", "masa") is True
+    assert la.consultar("gravedad", "masa") == 1.0
 
 
 def _asociaciones(la, texto):
@@ -498,7 +556,7 @@ def test_sinonimo_canoniza_y_refuerza_mismo_concepto():
 
     assert "solar" not in la.piscina.burbujas, "la forma superficial no debe quedar en el indice"
     assert la.piscina.burbujas["sol"].peso == 2, "sol se refuerza por ambas formas"
-    assert la.consultar("masa", "sol") is True
+    assert la.consultar("masa", "sol") == 1.0
 
 
 def test_sinonimo_morfologico_seguro():
@@ -510,7 +568,7 @@ def test_sinonimo_morfologico_seguro():
 
     assert "lunar" not in la.piscina.burbujas
     assert la.piscina.burbujas["luna"].peso == 2
-    assert la.consultar("masa", "luna") is True
+    assert la.consultar("masa", "luna") == 1.0
 
 
 def test_sinonimo_no_inventa_si_raiz_no_existe():
@@ -544,7 +602,7 @@ def test_sinonimo_en_declarar_relacion():
     la.declarar_relacion("solar", "masa")
 
     assert "solar" not in la.piscina.burbujas
-    assert la.consultar("masa", "sol") is True
+    assert la.consultar("masa", "sol") == 1.0
 
 
 def test_nivel_promocion_deriva_del_peso():
@@ -601,8 +659,8 @@ def test_nivel_es_ortogonal_a_la_navegacion():
     la.procesar_consulta("otro")
 
     assert la.nivel("gravedad") > la.nivel("doom3")
-    assert la.consultar("doom3", "idtech4") is True, "el nivel no destruye navegacion real"
-    assert la.consultar("gravedad", "otro") is False, "el nivel no fabrica navegacion"
+    assert la.consultar("doom3", "idtech4") == 1.0, "el nivel no destruye navegacion real"
+    assert la.consultar("gravedad", "otro") == 0, "el nivel no fabrica navegacion"
 
 
 def test_jerarquia_no_muta_estado(tmp_path):

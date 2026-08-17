@@ -27,8 +27,12 @@ Mecanismo del modelo canonico:
     entre sus nodos: una relacion observada entre conceptos ya
     establecidos. Es la UNICA forma de crear aristas.
   - repetido -> refuerza peso de la burbuja.
-  - conectados(a, b): mismo nodo -> True. Si no, BFS sobre ARISTAS
-    explicitas. Compartir termino en consultas distintas NO conecta.
+  - relacion(a, b): confianza en [0, 1]. 1.0 = OBSERVADO (termino
+    identico, co-ocurrencia directa, arista explicita entre los
+    conceptos); 0.5^puentes = INFERIDO por cierre transitivo (cada
+    puente observado cruzado divide la confianza a la mitad); 0.0 =
+    sin relacion. Compartir termino en consultas distintas NO conecta.
+    conectados() es su wrapper booleano.
 
 Regla de oro (decision 16/8/2026, registrada en el MCP remoto):
   PERTENENCIA = activacion/primado de contexto. ARISTA = navegacion.
@@ -128,6 +132,29 @@ Promocion jerarquica tipo HNSW (fusion 16/8/2026):
     presupuesto: es el 'paquete de contexto' con prioridad por
     relevancia, no por conectividad. NO toca aristas: el nivel es
     ortogonal a consultar() (no crea ni destruye navegacion).
+
+Navegacion con consciencia de distancia (fusion 17/8/2026):
+  - La regla estricta hizo las aristas HONESTAS (solo co-ocurrencia
+    existente+existente), pero no las acoto en el tiempo: el cierre
+    transitivo (BFS) sobre el grafo fabricaba pares que nadie observo
+    -- 'motor del piano' conectaba cilindro y nota por encadenar
+    motor->piano, y a escala de anos la densificacion monotonica hacia
+    TODO alcanzable en pocos saltos: la memoria 'sabe todo conectado'
+    (alucinacion). Podar aristas era falso remedio: mataba la
+    asociacion abstracta legitima. Las personas piensan en abstracto y
+    conectan dominios (motor+piano es MEMORIA, no error). La salida no
+    es borrar asociaciones sino hacer VISIBLE la distancia de la
+    inferencia.
+  - relacion(a, b) devuelve CONFIANZA en [0, 1]: 1.0 SOLO para lo
+    observado (identico, co-ocurrencia directa, o la pareja de
+    conceptos de una arista explicita). Toda ruta inferida cruza
+    puentes observados y cada puente divide la confianza por 2:
+    motor-piano = 1.0 (observado); cilindro-nota via motor-piano =
+    0.5 (inferido, recuperable pero jamas igual a un recuerdo);
+    doom3-netradiant = 0.25 (dos puentes cruzados). La pareja
+    observada vive en self.relaciones (CONCEPTOS, no nodos): el
+    fan-out de nodos de arista_entre borraria quien fue realmente
+    observado y el BFS no podria distinguir.
 """
 import json
 import re
@@ -231,6 +258,7 @@ class Piscina:
     def __init__(self):
         self.burbujas = {}  # termino -> Burbuja
         self.nodos = {}     # id -> Nodo
+        self.relaciones = set()  # pares observados (conceptos, no nodos)
         self._n_eventos = 0  # contador de mutaciones (escala del olvido)
 
     def existe(self, termino):
@@ -301,9 +329,12 @@ class Piscina:
 
     def arista_entre(self, a, b):
         """Registra una relacion observada entre dos conceptos ya
-        establecidos: arista explicita entre TODOS los pares de sus
-        nodos. Unico lugar donde se crean aristas."""
+        establecidos: la pareja queda en self.relaciones (para la
+        confianza de consulta) y como arista explicita entre TODOS los
+        pares de sus nodos (para la navegacion). Unico lugar donde se
+        crean aristas."""
         self._n_eventos += 1
+        self.relaciones.add(tuple(sorted((a, b))))
         na = sorted(self.nodos_de(a))
         nb = sorted(self.nodos_de(b))
         for na_id in na:
@@ -312,18 +343,27 @@ class Piscina:
                     self.nodos[na_id].aristas.add(nb_id)
                     self.nodos[nb_id].aristas.add(na_id)
 
-    def conectados(self, a, b, max_saltos=10):
-        """NAVEGACION: mismo nodo (co-ocurrencia directa) -> True. Si no,
-        BFS sobre ARISTAS explicitas. Compartir termino en consultas
-        distintas NO conecta."""
+    def relacion(self, a, b, max_saltos=10):
+        """NAVEGACION con consciencia de distancia. Devuelve la confianza
+        de la relacion entre a y b en [0, 1], distinguiendo lo OBSERVADO
+        de lo INFERIDO (el cierre transitivo deja de alucinar invisible):
+          - 1.0   termino identico, co-ocurrencia directa (membresia) o
+                  la pareja observada de una arista explicita.
+          - 0.5^k (k >= 1): INFERENCIA por cierre transitivo; k = numero
+                  de puentes observados cruzados en el camino mas corto
+                  de nodos. Recuperable, pero jamas igual a un recuerdo.
+          - 0.0   sin relacion.
+        Compartir termino en consultas distintas NO conecta."""
         if a == b:
-            return True
+            return 1.0
         if self.comparten_nodo(a, b):
-            return True
+            return 1.0
+        if tuple(sorted((a, b))) in self.relaciones:
+            return 1.0
         na = self.nodos_de(a)
         nb = self.nodos_de(b)
         if not na or not nb:
-            return False
+            return 0.0
         visitados = set(na)
         cola = deque((nid, 0) for nid in na)
         while cola:
@@ -332,11 +372,16 @@ class Piscina:
                 continue
             for vecino in self.nodos[nid].aristas:
                 if vecino in nb:
-                    return True
+                    return 0.5 ** (saltos + 1)
                 if vecino not in visitados:
                     visitados.add(vecino)
                     cola.append((vecino, saltos + 1))
-        return False
+        return 0.0
+
+    def conectados(self, a, b, max_saltos=10):
+        """Wrapper booleano de relacion(): hay relacion cuando la
+        confianza es mayor que cero."""
+        return self.relacion(a, b, max_saltos) > 0
 
     def _peso_nodo(self, nid):
         return sum(self.burbujas[t].peso for t in self.nodos[nid].burbujas)
@@ -374,6 +419,7 @@ class Piscina:
                 b = unitarios[terminos[j]]
                 self.nodos[a].aristas.add(b)
                 self.nodos[b].aristas.add(a)
+                self.relaciones.add(tuple(sorted((terminos[i], terminos[j]))))
         return unitarios
 
     def decaer(self, umbral=None):
@@ -454,6 +500,7 @@ class Piscina:
             "_n_eventos": self._n_eventos,
             "burbujas": {t: {"peso": b.peso, "nodos": sorted(b.nodos), "ultimo_evento": b.ultimo_evento} for t, b in self.burbujas.items()},
             "nodos": {nid: {"burbujas": sorted(n.burbujas), "aristas": sorted(n.aristas)} for nid, n in self.nodos.items()},
+            "relaciones": sorted(list(self.relaciones)),
         }
 
     def cargar_dict(self, data):
@@ -476,6 +523,7 @@ class Piscina:
             if nid.startswith("n") and nid[1:].isdigit():
                 max_seq = max(max_seq, int(nid[1:]))
         Nodo._seq = max_seq
+        self.relaciones = {tuple(r) for r in data.get("relaciones", [])}
 
 
 class PiscinaPersistente(Piscina):
@@ -574,6 +622,9 @@ class PiscinaPersistente(Piscina):
         if fila:
             desde_id, estado_json = fila
             self.cargar_dict(json.loads(estado_json))
+        else:
+            Nodo._seq = 0  # los ids del log son absolutos: el replay debe
+            # regenerar n1, n2... aun con otras piscinas en el proceso
 
         filas = self.db.execute(
             "SELECT metodo, argumentos FROM eventos WHERE id > ? ORDER BY id ASC",
@@ -727,7 +778,10 @@ class LaCaja:
         return self.caja.procesar_terminos([a, b])
 
     def consultar(self, a, b):
-        return self.piscina.conectados(a, b)
+        """Confianza de la relacion: 1.0 = observada (co-ocurrencia o
+        arista explicita), 0.5^puentes = inferida por cierre transitivo,
+        0.0 = sin relacion."""
+        return self.piscina.relacion(a, b)
 
     def nivel(self, termino):
         return self.piscina.nivel_promocion(termino)
