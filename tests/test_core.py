@@ -545,3 +545,76 @@ def test_sinonimo_en_declarar_relacion():
 
     assert "solar" not in la.piscina.burbujas
     assert la.consultar("masa", "sol") is True
+
+
+def test_nivel_promocion_deriva_del_peso():
+    """La jerarquia es una funcion derivada del peso, sin estado
+    propio: promociona al reforzar y desciende con el olvido."""
+    la = LaCaja()
+    assert la.nivel("gravedad") == 0
+    la.procesar_consulta("gravedad")
+    assert la.nivel("gravedad") == 1
+    la.procesar_consulta("gravedad")
+    la.procesar_consulta("gravedad")
+    assert la.nivel("gravedad") == 2
+
+
+def test_nivel_desciende_con_decay():
+    """La promocion es bidireccional: el olvido des-promueve."""
+    la = LaCaja()
+    la.piscina.UMBRAL_DECAY_EVENTOS = 2
+    for _ in range(3):
+        la.procesar_consulta("gravedad")
+    assert la.nivel("gravedad") == 2
+    for q in ["alfa", "beta", "gamma", "delta", "epsilon"]:
+        la.procesar_consulta(q)
+    la.optimizar()
+
+    assert la.piscina.burbujas["gravedad"].peso == 2
+    assert la.nivel("gravedad") == 1, "el olvido baja de nivel al termino"
+
+
+def test_contexto_primado_ordena_por_nivel():
+    """La vista de primado ordena el vecindario de activacion por nivel
+    (los mas reforzados primero) y respeta el presupuesto."""
+    la = LaCaja()
+    la.procesar_consulta("masa energia fuerza")
+    la.procesar_consulta("masa energia")
+    la.procesar_consulta("masa energia")
+    la.procesar_consulta("masa fuerza")
+
+    primado = la.contexto_primado("masa", presupuesto=5)
+    assert primado and primado[0] == "energia", "el co-miembro mas reforzado encabeza el primado"
+    assert len(primado) <= 5
+    assert set(primado) <= {"energia", "fuerza"}
+
+
+def test_nivel_es_ortogonal_a_la_navegacion():
+    """La jerarquia NO altera la conectividad: un termino que sube de
+    nivel no gana ni pierde navegacion por ello."""
+    la = LaCaja()
+    la.procesar_consulta("doom3")
+    la.procesar_consulta("idtech4")
+    la.declarar_relacion("doom3", "idtech4")
+    for _ in range(5):
+        la.procesar_consulta("gravedad")
+    la.procesar_consulta("otro")
+
+    assert la.nivel("gravedad") > la.nivel("doom3")
+    assert la.consultar("doom3", "idtech4") is True, "el nivel no destruye navegacion real"
+    assert la.consultar("gravedad", "otro") is False, "el nivel no fabrica navegacion"
+
+
+def test_jerarquia_no_muta_estado(tmp_path):
+    """Leer la jerarquia y el primado no genera eventos ni cambia el
+    estado: es puramente derivado (seguro para el event-sourcing)."""
+    db_path = str(tmp_path / "piscina.db")
+    _reset_id_sequence()
+    la = LaCaja(db_path=db_path)
+    la.procesar_consulta("masa energia")
+    antes = la.piscina.a_dict()
+
+    la.nivel("masa")
+    la.contexto_primado("masa")
+
+    assert la.piscina.a_dict() == antes

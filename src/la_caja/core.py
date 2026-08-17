@@ -117,9 +117,17 @@ Resolucion de sinonimos / identidad (fusion 16/8/2026):
     la Caja sigue siendo un procesador transitorio puro. La resolucion
     es por consulta (contra el estado pre-consulta de la piscina).
 
-Discusiones abiertas fuera del alcance de este archivo:
-  - promocion jerarquica tipo HNSW como mecanismo SEPARADO de la
-    navegacion
+Promocion jerarquica tipo HNSW (fusion 16/8/2026):
+  - Mecanismo SEPARADO de la navegacion: la jerarquia es una funcion
+    DERIVADA del peso (nivel_promocion), sin estado propio, luego
+    trivualmente segura para el event-sourcing (no genera eventos).
+    Promociona al reforzar, desciende al olvidar (decay): la promocion
+    es bidireccional.
+  - contexto_primado(termino, presupuesto) ordena el vecindario de
+    ACTIVACION (co-membresia) por nivel descendente y lo acota al
+    presupuesto: es el 'paquete de contexto' con prioridad por
+    relevancia, no por conectividad. NO toca aristas: el nivel es
+    ortogonal a consultar() (no crea ni destruye navegacion).
 """
 import json
 import re
@@ -218,6 +226,7 @@ class Piscina:
     UMBRAL_DECAY_EVENTOS = 50  # eventos de no-uso antes de olvidar
     FACTOR_DECAY = 2  # olvido: el peso se reduce a la mitad hacia el piso
     PISO_DECAY = 1  # el rastro del termino no desaparece nunca
+    UMBRALES_NIVEL = (1, 3, 10, 30)  # promocion: umbrales de peso por nivel
 
     def __init__(self):
         self.burbujas = {}  # termino -> Burbuja
@@ -407,6 +416,37 @@ class Piscina:
             "nodos": len(self.nodos),
             "aristas": sum(len(n.aristas) for n in self.nodos.values()) // 2,
         }
+
+    def nivel_promocion(self, termino):
+        """Nivel de la jerarquia, DERIVADO del peso (sin estado propio):
+        cuantos umbrales de peso supera. Promociona al reforzar,
+        desciende al olvidar. No toca la navegacion."""
+        b = self.burbujas.get(termino)
+        if not b:
+            return 0
+        nivel = 0
+        for u in self.UMBRALES_NIVEL:
+            if b.peso >= u:
+                nivel += 1
+        return nivel
+
+    def contexto_primado(self, termino, presupuesto=5):
+        """Vista de primado de contexto: el vecindario de ACTIVACION
+        (co-membresia en los nodos del termino), ordenado por nivel
+        descendente (los mas reforzados primero) y acotado al
+        presupuesto. Mecanismo SEPARADO de la navegacion: no usa
+        aristas ni las modifica."""
+        candidatos = {}
+        for nid in self.nodos_de(termino):
+            for otro in self.nodos[nid].burbujas:
+                if otro != termino:
+                    candidatos[otro] = self.burbujas[otro].peso
+        ordenados = sorted(
+            candidatos,
+            key=lambda t: (self.nivel_promocion(t), self.burbujas[t].peso),
+            reverse=True,
+        )
+        return ordenados[:presupuesto]
 
     # -- serializacion para snapshots --
     def a_dict(self):
@@ -688,6 +728,12 @@ class LaCaja:
 
     def consultar(self, a, b):
         return self.piscina.conectados(a, b)
+
+    def nivel(self, termino):
+        return self.piscina.nivel_promocion(termino)
+
+    def contexto_primado(self, termino, presupuesto=5):
+        return self.piscina.contexto_primado(termino, presupuesto)
 
     def stats(self):
         return self.piscina.stats()
