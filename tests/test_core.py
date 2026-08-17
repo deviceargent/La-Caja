@@ -371,7 +371,7 @@ def test_no_direct_bypass_of_piscina_internals(tmp_path):
 
     metodos = {fila[0] for fila in la.piscina.db.execute("SELECT metodo FROM eventos").fetchall()}
     assert "crear_burbuja" in metodos
-    assert metodos <= {"crear_burbuja", "reforzar", "crear_unitario", "crear_compartido", "fusionar", "arista_entre", "fisionar_nodo", "fijar_peso"}
+    assert metodos <= {"crear_burbuja", "reforzar", "crear_unitario", "crear_compartido", "fusionar", "arista_entre", "fisionar_nodo", "fijar_peso", "fijar_fuerza_relacion", "prune_relacion"}
 
 
 def test_in_memory_piscina_without_db_path_works_unpersisted():
@@ -676,3 +676,101 @@ def test_jerarquia_no_muta_estado(tmp_path):
     la.contexto_primado("masa")
 
     assert la.piscina.a_dict() == antes
+
+
+# ----------------------------------------------------------------------
+# Iteracion 2: relaciones con refuerzo y olvido (poda selectiva)
+# ----------------------------------------------------------------------
+
+def test_relacion_se_refuerza_con_cada_co_ocurrencia():
+    """Cada co-ocurrencia observada REFUERZA la relacion (no solo la
+    registra): la fuerza es el contador de refuerzos."""
+    la = LaCaja()
+    la.procesar_consulta("alfa")
+    la.procesar_consulta("beta")
+    la.declarar_relacion("alfa", "beta")
+    la.declarar_relacion("alfa", "beta")
+    la.declarar_relacion("alfa", "beta")
+
+    assert la.piscina.relaciones[("alfa", "beta")]["fuerza"] == 3
+    assert la.consultar("alfa", "beta") == 1.0
+
+
+def test_relacion_debil_se_olvida_y_poda_sus_aristas():
+    """Una relacion de fuerza 1 (co-ocurrencia incidental, nunca
+    reforzada) se OLVIDA al consolidar: desaparece de relaciones y sus
+    aristas de navegacion se podan con exactitud."""
+    la = LaCaja()
+    la.piscina.UMBRAL_DECAY_RELACION = 5
+    la.procesar_consulta("alfa")
+    la.procesar_consulta("beta")
+    la.declarar_relacion("alfa", "beta")
+    for _ in range(6):
+        la.procesar_consulta("gamma")
+
+    la.optimizar()
+
+    assert ("alfa", "beta") not in la.piscina.relaciones
+    assert la.consultar("alfa", "beta") == 0, "sin relacion ni arista: aislados otra vez"
+
+
+def test_relacion_reforzada_sobrevive_el_olvido():
+    """La fuerza amortigua el olvido: una relacion reforzada (fuerza 2)
+    decae a 1 pero sobrevive la pasada; la incidental (fuerza 1) muere."""
+    la = LaCaja()
+    la.piscina.UMBRAL_DECAY_RELACION = 5
+    la.procesar_consulta("alfa")
+    la.procesar_consulta("beta")
+    la.procesar_consulta("zeta")
+    la.procesar_consulta("eta")
+    la.declarar_relacion("alfa", "beta")
+    la.declarar_relacion("alfa", "beta")  # fuerza 2
+    la.declarar_relacion("zeta", "eta")   # fuerza 1
+    for _ in range(6):
+        la.procesar_consulta("gamma")
+
+    la.optimizar()
+
+    assert ("alfa", "beta") in la.piscina.relaciones, "la reforzada sobrevive"
+    assert la.piscina.relaciones[("alfa", "beta")]["fuerza"] == 1, "2 -> 1 (mitad suave)"
+    assert ("zeta", "eta") not in la.piscina.relaciones, "la incidental muere"
+
+
+def test_olvido_de_relacion_replay_byte_identical(tmp_path):
+    """La poda de relaciones se registra en el log (fijar_fuerza_relacion
+    + prune_relacion): tras reiniciar, el replay reconstruye el olvido
+    byte a byte."""
+    db_path = str(tmp_path / "piscina.db")
+    _reset_id_sequence()
+    la1 = LaCaja(db_path=db_path)
+    la1.piscina.UMBRAL_DECAY_RELACION = 5
+    la1.procesar_consulta("alfa")
+    la1.procesar_consulta("beta")
+    la1.declarar_relacion("alfa", "beta")
+    for _ in range(6):
+        la1.procesar_consulta("gamma")
+    la1.optimizar()
+    estado = la1.piscina.a_dict()
+    la1.piscina.db.close()
+
+    _reset_id_sequence()
+    la2 = LaCaja(db_path=db_path)
+    assert la2.piscina.a_dict() == estado
+    assert ("alfa", "beta") not in la2.piscina.relaciones
+
+
+def test_primado_prefiere_relaciones_observadas():
+    """La vista de primado resucita por lo OBSERVADO: una relacion
+    reforzada encabeza sobre una co-membresia de activacion."""
+    la = LaCaja()
+    la.procesar_consulta("masa")
+    la.procesar_consulta("energia")
+    la.procesar_consulta("masa energia")  # establecidos -> relacion
+    la.procesar_consulta("masa energia")  # refuerza
+    la.procesar_consulta("masa energia")  # refuerza
+    la.procesar_consulta("masa fuerza")   # fuerza nace junto a masa (membresia)
+    la.procesar_consulta("masa fuerza")   # refuerza membresia, sin relacion
+
+    primado = la.contexto_primado("masa", presupuesto=5)
+    assert primado[0] == "energia", "la relacion observada reforzada encabeza"
+    assert "energia" in primado and "fuerza" in primado

@@ -325,8 +325,10 @@ def test_c(docs, corte=0.60):
     n = len(docs)
     k = int(n * corte)
     la = LaCaja(filtro_ontologico=INGLES)
-    for fecha, texto in docs[:k]:
+    for i, (fecha, texto) in enumerate(docs[:k]):
         la.procesar_consulta(texto)
+        if (i + 1) % OPTIMIZAR_CADA == 0:
+            la.optimizar()
     # frecuencia global de la memoria (baseline)
     frec = Counter()
     for t in la.piscina.burbujas:
@@ -336,7 +338,7 @@ def test_c(docs, corte=0.60):
     modelo_hits, freq_hits, rand_hits = [], [], []
     con_cover = 0
     doc_scores = 0
-    for fecha, texto in docs[k:]:
+    for j, (fecha, texto) in enumerate(docs[k:]):
         toks = list(dict.fromkeys(filtrar(tokenizar(texto))))
         conocidos = [t for t in toks if t in la.piscina.burbujas]
         if len(conocidos) < 2:
@@ -344,7 +346,7 @@ def test_c(docs, corte=0.60):
         con_cover += 1
         for t in conocidos:
             respuesta = set(conocidos) - {t}
-            prim = set(la.contexto_primado(t, presupuesto=5))
+            prim = set(la.contexto_primado(t, presupuesto=10))
             modelo_hits.append(len(prim & respuesta) / len(respuesta))
             freq_hits.append(len(set(top_frec) & respuesta) / len(respuesta))
             # baseline honesto: 5 terminos al azar del VOCABULARIO de la
@@ -354,6 +356,8 @@ def test_c(docs, corte=0.60):
             rand_hits.append(len(r5 & respuesta) / len(respuesta))
             doc_scores += 1
         la.procesar_consulta(texto)
+        if (j + 1) % OPTIMIZAR_CADA == 0:
+            la.optimizar()
     if not modelo_hits:
         return {"error": "sin cobertura"}
     res = {

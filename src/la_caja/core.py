@@ -131,10 +131,11 @@ Promocion jerarquica tipo HNSW (fusion 16/8/2026):
     trivualmente segura para el event-sourcing (no genera eventos).
     Promociona al reforzar, desciende al olvidar (decay): la promocion
     es bidireccional.
-  - contexto_primado(termino, presupuesto) ordena el vecindario de
-    ACTIVACION (co-membresia) por nivel descendente y lo acota al
-    presupuesto: es el 'paquete de contexto' con prioridad por
-    relevancia, no por conectividad. NO toca aristas: el nivel es
+  - contexto_primado(termino, presupuesto) ordena el paquete de
+    contexto: las RELACIONES OBSERVADAS del termino primero (memorias
+    reforzadas, por fuerza de refuerzo) y luego el vecindario de
+    ACTIVACION (co-membresia), ambos por relevancia (fuerza, nivel,
+    peso) y acotado al presupuesto. NO toca aristas: el nivel es
     ortogonal a consultar() (no crea ni destruye navegacion).
 
 Navegacion con consciencia de distancia (fusion 17/8/2026):
@@ -159,6 +160,24 @@ Navegacion con consciencia de distancia (fusion 17/8/2026):
     observada vive en self.relaciones (CONCEPTOS, no nodos): el
     fan-out de nodos de arista_entre borraria quien fue realmente
     observado y el BFS no podria distinguir.
+
+Relaciones con refuerzo y olvido (iteracion 2, 17/8/2026):
+  - El experimento organico (experiments/falsacion.md) falsaco la
+    tesis de no-densificacion: relaciones y aristas acumulaban todo
+    monotonamente (componente gigante 86%, todo conectado). La salida
+    es OLVIDO, no poda ajena: self.relaciones es ahora un dict de
+    {par: fuerza, ultimo_evento}. Cada co-ocurrencia observada
+    (arista_entre / fisionar_nodo) REFUERZA la relacion en vez de solo
+    registrarla.
+  - decaer() olvida relaciones: una relacion no reforzada por mas de
+    UMBRAL_DECAY_EVENTOS pierde fuerza (mitad hacia el piso); en 0 se
+    PODE la relacion y sus aristas exactas (aristas_por_relacion
+    registra que aristas materializo cada relacion). Solo sobreviven
+    las asociaciones reforzadas de verdad: el grafo se vuelve esparso,
+    la escala 0.5^k vuelve a discriminar, y la selectividad (lo que
+    queda como observado es lo que co-ocurre fuerte) sube.
+  - La poda es evento del log (prune_relacion, fijar_fuerza_relacion):
+    el replay reconstruye el olvido byte a byte.
 """
 import json
 import re
@@ -257,12 +276,16 @@ class Piscina:
     UMBRAL_DECAY_EVENTOS = 50  # eventos de no-uso antes de olvidar
     FACTOR_DECAY = 2  # olvido: el peso se reduce a la mitad hacia el piso
     PISO_DECAY = 1  # el rastro del termino no desaparece nunca
+    UMBRAL_DECAY_RELACION = 400  # eventos de no-uso antes de olvidar una relacion
+    FACTOR_DECAY_RELACION = 4  # olvido de relaciones 4x mas suave que el de terminos
     UMBRALES_NIVEL = (1, 3, 10, 30)  # promocion: umbrales de peso por nivel
 
     def __init__(self):
         self.burbujas = {}  # termino -> Burbuja
         self.nodos = {}     # id -> Nodo
-        self.relaciones = set()  # pares observados (conceptos, no nodos)
+        self.relaciones = {}  # par (conceptos) -> {"fuerza", "ultimo_evento"}
+        self.relaciones_por_termino = {}  # termino -> set(partners) (indice de primado)
+        self.aristas_por_relacion = {}  # par -> set de aristas exactas que materializo
         self._n_eventos = 0  # contador de mutaciones (escala del olvido)
 
     def existe(self, termino):
@@ -332,17 +355,18 @@ class Piscina:
         return nuevo
 
     def arista_entre(self, a, b):
-        """Registra una relacion observada entre dos conceptos ya
-        establecidos: la pareja queda en self.relaciones (confianza 1.0)
-        y como aristas de navegacion entre los VENTANA_COOCURRENCIA
-        contextos (nodos) MAS reforzados de cada termino. Presupuesto de
+        """Registra y REFUERZA una relacion observada entre dos
+        conceptos ya establecidos: la pareja sube su contador de
+        co-ocurrencia en self.relaciones (confianza 1.0) y materializa
+        aristas de navegacion entre los VENTANA_COOCURRENCIA contextos
+        (nodos) MAS reforzados de cada termino. Presupuesto de
         navegacion: conectividad de par completa para grafos pequenos,
-        acotada a K x K aristas por observacion para no explotar (el
-        bipartito completo entre TODAS las membresias llegaba a millones
-        de aristas en corpus reales). Unico lugar donde se crean
-        aristas."""
+        acotada a K x K aristas por observacion (el bipartito completo
+        entre TODAS las membresias llegaba a millones de aristas en
+        corpus reales). Las aristas se registran por relacion para que
+        el olvido las pode con exactitud. Unico lugar donde se crean
+        aristas (con fisionar_nodo)."""
         self._n_eventos += 1
-        self.relaciones.add(tuple(sorted((a, b))))
         na = sorted(
             self.nodos_de(a),
             key=lambda nid: (self._peso_nodo(nid), nid),
@@ -353,11 +377,53 @@ class Piscina:
             key=lambda nid: (self._peso_nodo(nid), nid),
             reverse=True,
         )[:VENTANA_COOCURRENCIA]
-        for na_id in na:
-            for nb_id in nb:
-                if na_id != nb_id:
-                    self.nodos[na_id].aristas.add(nb_id)
-                    self.nodos[nb_id].aristas.add(na_id)
+        aristas = {(x, y) for x in na for y in nb if x != y}
+        self._marcar_relacion(a, b, aristas)
+
+    def _marcar_relacion(self, a, b, aristas):
+        """Crea o refuerza una relacion observada y registra las
+        aristas de navegacion que materializa (aristas_por_relacion,
+        para la poda exacta del olvido). NO cuenta evento: el llamador
+        (arista_entre / fisionar_nodo) lo hace una vez por operacion."""
+        clave = tuple(sorted((a, b)))
+        if clave in self.relaciones:
+            self.relaciones[clave]["fuerza"] += 1
+            self.relaciones[clave]["ultimo_evento"] = self._n_eventos
+        else:
+            self.relaciones[clave] = {"fuerza": 1, "ultimo_evento": self._n_eventos}
+            self.relaciones_por_termino.setdefault(a, set()).add(b)
+            self.relaciones_por_termino.setdefault(b, set()).add(a)
+            self.aristas_por_relacion[clave] = set()
+        self.aristas_por_relacion[clave].update(aristas)
+        for x, y in aristas:
+            self.nodos[x].aristas.add(y)
+            self.nodos[y].aristas.add(x)
+
+    def fijar_fuerza_relacion(self, a, b, fuerza):
+        """Fija la fuerza de una relacion observada (olvido gradual).
+        NO cuenta como evento de uso: no avanza la staleness."""
+        clave = tuple(sorted((a, b)))
+        if clave in self.relaciones:
+            self.relaciones[clave]["fuerza"] = fuerza
+
+    def prune_relacion(self, a, b):
+        """Olvido completo de una relacion observada: elimina la
+        relacion y sus aristas de navegacion exactas. Se llama desde
+        decaer() dentro de la pasada de consolidacion."""
+        clave = tuple(sorted((a, b)))
+        if clave not in self.relaciones:
+            return
+        for x, y in self.aristas_por_relacion.pop(clave, set()):
+            if x in self.nodos and y in self.nodos:
+                self.nodos[x].aristas.discard(y)
+                self.nodos[y].aristas.discard(x)
+        del self.relaciones[clave]
+        for t in (a, b):
+            partners = self.relaciones_por_termino.get(t)
+            if partners is not None:
+                partners.discard(a if t == b else b)
+                if not partners:
+                    del self.relaciones_por_termino[t]
 
     def relacion(self, a, b, max_saltos=10):
         """NAVEGACION con consciencia de distancia. Devuelve la confianza
@@ -433,9 +499,7 @@ class Piscina:
             for j in range(i + 1, len(terminos)):
                 a = unitarios[terminos[i]]
                 b = unitarios[terminos[j]]
-                self.nodos[a].aristas.add(b)
-                self.nodos[b].aristas.add(a)
-                self.relaciones.add(tuple(sorted((terminos[i], terminos[j]))))
+                self._marcar_relacion(terminos[i], terminos[j], {(a, b)})
         return unitarios
 
     def decaer(self, umbral=None):
@@ -444,7 +508,11 @@ class Piscina:
         PISO_DECAY). La staleness se mide en conteo de eventos del log
         (determinista para el replay), no en reloj de pared. Pura
         lectura de estado: cada cambio se delega en fijar_peso, que el
-        event-sourcing registra."""
+        event-sourcing registra. Tambien olvida RELACIONES: una
+        relacion no reforzada pierde fuerza (mitad hacia el piso 0) y,
+        en 0, se PODE la relacion y sus aristas exactas
+        (prune_relacion). Solo sobreviven las asociaciones reforzadas
+        de verdad."""
         umbral = umbral if umbral is not None else self.UMBRAL_DECAY_EVENTOS
         decaidos = []
         for t, b in self.burbujas.items():
@@ -452,6 +520,19 @@ class Piscina:
                 nuevo = max(self.PISO_DECAY, b.peso - max(1, b.peso // self.FACTOR_DECAY))
                 self.fijar_peso(t, nuevo)
                 decaidos.append(t)
+        # Las relaciones se olvidan con su propia escala: mas lentas que
+        # los terminos (FACTOR_DECAY_RELACION=4) y con mas gracia de
+        # no-uso (UMBRAL_DECAY_RELACION). Solo la co-ocurrencia
+        # incidental (fuerza 1, sin refuerzo reciente) muere.
+        for clave, datos in list(self.relaciones.items()):
+            if self._n_eventos - datos["ultimo_evento"] > self.UMBRAL_DECAY_RELACION and datos["fuerza"] > 0:
+                nueva = max(
+                    0,
+                    datos["fuerza"] - max(1, datos["fuerza"] // self.FACTOR_DECAY_RELACION),
+                )
+                self.fijar_fuerza_relacion(*clave, nueva)
+                if nueva == 0:
+                    self.prune_relacion(*clave)
         return {"decaidos": decaidos}
 
     def optimizar(self, max_membresias=None):
@@ -492,22 +573,26 @@ class Piscina:
                 nivel += 1
         return nivel
 
-    def contexto_primado(self, termino, presupuesto=5):
-        """Vista de primado de contexto: el vecindario de ACTIVACION
-        (co-membresia en los nodos del termino), ordenado por nivel
-        descendente (los mas reforzados primero) y acotado al
-        presupuesto. Mecanismo SEPARADO de la navegacion: no usa
-        aristas ni las modifica."""
+    def contexto_primado(self, termino, presupuesto=10):
+        """Vista de primado de contexto: las RELACIONES OBSERVADAS del
+        termino primero (memorias reforzadas, ordenadas por fuerza de
+        refuerzo) y luego el vecindario de ACTIVACION (co-membresia),
+        todos por relevancia (fuerza de relacion, nivel, peso) y
+        acotados al presupuesto. Mecanismo SEPARADO de la navegacion:
+        no usa aristas ni las modifica."""
         candidatos = {}
+        for v in self.relaciones_por_termino.get(termino, ()):
+            b = self.burbujas[v]
+            candidatos[v] = (
+                self.relaciones[tuple(sorted((termino, v)))]["fuerza"],
+                self.nivel_promocion(v),
+                b.peso,
+            )
         for nid in self.nodos_de(termino):
             for otro in self.nodos[nid].burbujas:
-                if otro != termino:
-                    candidatos[otro] = self.burbujas[otro].peso
-        ordenados = sorted(
-            candidatos,
-            key=lambda t: (self.nivel_promocion(t), self.burbujas[t].peso),
-            reverse=True,
-        )
+                if otro != termino and otro not in candidatos:
+                    candidatos[otro] = (0, self.nivel_promocion(otro), self.burbujas[otro].peso)
+        ordenados = sorted(candidatos, key=lambda t: candidatos[t], reverse=True)
         return ordenados[:presupuesto]
 
     # -- serializacion para snapshots --
@@ -516,7 +601,12 @@ class Piscina:
             "_n_eventos": self._n_eventos,
             "burbujas": {t: {"peso": b.peso, "nodos": sorted(b.nodos), "ultimo_evento": b.ultimo_evento} for t, b in self.burbujas.items()},
             "nodos": {nid: {"burbujas": sorted(n.burbujas), "aristas": sorted(n.aristas)} for nid, n in self.nodos.items()},
-            "relaciones": sorted(list(self.relaciones)),
+            "relaciones": [
+                [a, b, d["fuerza"], d["ultimo_evento"]] for (a, b), d in sorted(self.relaciones.items())
+            ],
+            "aristas_por_relacion": [
+                [a, b, [[x, y] for x, y in sorted(es)]] for (a, b), es in sorted(self.aristas_por_relacion.items())
+            ],
         }
 
     def cargar_dict(self, data):
@@ -539,7 +629,16 @@ class Piscina:
             if nid.startswith("n") and nid[1:].isdigit():
                 max_seq = max(max_seq, int(nid[1:]))
         Nodo._seq = max_seq
-        self.relaciones = {tuple(r) for r in data.get("relaciones", [])}
+        self.relaciones = {}
+        for a, b, fuerza, ultimo_evento in data.get("relaciones", []):
+            self.relaciones[tuple(sorted((a, b)))] = {"fuerza": fuerza, "ultimo_evento": ultimo_evento}
+        self.aristas_por_relacion = {}
+        for a, b, es in data.get("aristas_por_relacion", []):
+            self.aristas_por_relacion[tuple(sorted((a, b)))] = {tuple(sorted((x, y))) for x, y in es}
+        self.relaciones_por_termino = {}
+        for (a, b) in self.relaciones:
+            self.relaciones_por_termino.setdefault(a, set()).add(b)
+            self.relaciones_por_termino.setdefault(b, set()).add(a)
 
 
 class PiscinaPersistente(Piscina):
@@ -621,6 +720,14 @@ class PiscinaPersistente(Piscina):
         super().fijar_peso(termino, peso)
         self._registrar("fijar_peso", {"termino": termino, "peso": peso})
 
+    def fijar_fuerza_relacion(self, a, b, fuerza):
+        super().fijar_fuerza_relacion(a, b, fuerza)
+        self._registrar("fijar_fuerza_relacion", {"a": a, "b": b, "fuerza": fuerza})
+
+    def prune_relacion(self, a, b):
+        super().prune_relacion(a, b)
+        self._registrar("prune_relacion", {"a": a, "b": b})
+
     def snapshot(self):
         ultimo = self.db.execute("SELECT MAX(id) FROM eventos").fetchone()[0] or 0
         self.db.execute(
@@ -670,6 +777,10 @@ class PiscinaPersistente(Piscina):
             Piscina.fisionar_nodo(self, argumentos["nid"])
         elif metodo == "fijar_peso":
             Piscina.fijar_peso(self, argumentos["termino"], argumentos["peso"])
+        elif metodo == "fijar_fuerza_relacion":
+            Piscina.fijar_fuerza_relacion(self, argumentos["a"], argumentos["b"], argumentos["fuerza"])
+        elif metodo == "prune_relacion":
+            Piscina.prune_relacion(self, argumentos["a"], argumentos["b"])
         else:
             raise ValueError(f"evento desconocido en el log: {metodo}")
 

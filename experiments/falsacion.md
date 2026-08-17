@@ -127,3 +127,47 @@ si sobrevive en ambas, la tesis es robusta al registro.
 - Blog Authorship Corpus (Schler, Koppel, Argamon, Pennebaker 2006),
   mirror `barilan/blog_authorship_corpus` (Hugging Face), `blogs.zip`.
 - Solo uso local, sin publicar los datos.
+
+## Iteracion 2 (17/8/2026): relaciones con refuerzo y olvido
+
+El run base FALSO el Test A en ambas corrientes (componente gigante
+56-86%, 100% de pares aleatorios conectados) y B1 (relaciones reales
+pero sin selectividad). Cambios al modelo, en la misma filosofia
+(olvido, no poda ajena):
+
+1. **self.relaciones es un dict {par: fuerza, ultimo_evento}.** Cada
+   co-ocurrencia observada (arista_entre / fisionar_nodo) REFUERZA la
+   relacion en vez de solo registrarla.
+2. **decaer() olvida relaciones** con su propia escala, mas lenta que
+   los terminos: `UMBRAL_DECAY_RELACION=400` eventos de gracia y
+   `FACTOR_DECAY_RELACION=4` (mitad suave). Al llegar a fuerza 0, la
+   relacion y sus aristas exactas (aristas_por_relacion) se PODAN.
+   Solo la co-ocurrencia incidental muere; la asociacion reforzada
+   sobrevive.
+3. **contexto_primado** resucita por lo OBSERVADO: relaciones
+   reforzadas primero, luego co-membresia (presupuesto 5 -> 10).
+4. Dos metodos mutantes registrados nuevos (10 en total):
+   `fijar_fuerza_relacion`, `prune_relacion` -- el replay reconstruye
+   el olvido byte a byte.
+
+Resultado Enron (base -> iteracion 2):
+
+| metrica | base | it2 agresiva | it2 suave |
+|---|---|---|---|
+| relaciones | 869k | 20.4k | 28.3k |
+| aristas | 8.8M | 285k | 403k |
+| componente gigante | 0.86 | 0.15 | 0.19 |
+| A1 pares uniformes conectados | 1.00 | 0.095 | 0.15 |
+| B1 precision | 36 | 62 | 65 |
+| B2 recall | 0.60 | 0.185 | 0.247 |
+| B3 disc. obs/ale | 3.1x | 27.5x | 27.3x |
+| C hit5 vs frecuencia | 0.009 vs 0.027 | 0.029 vs 0.030 | 0.029 vs 0.030 |
+
+Veredicto final (ambas corrientes): **A3 ok** (la componente gigante
+desaparece), **B1 ok** (selectividad: lo que queda como observado
+co-ocurre fuerte), **B3 ok** (observado >> inferido ~ 0), **A1/A2
+FALSA** solo por el nucleo de los 500 terminos mas frecuentes (el
+vocabulario de trabajo es densamente co-ocurrente de verdad), **B2
+FALSA** (el olvido pierde ~75% de las asociaciones genuinas del
+corpus: tension recall/densidad), **C FALSA** (el primado queda
+empatado con el baseline de frecuencia global, ambos ~3%).
