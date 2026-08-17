@@ -169,20 +169,68 @@ def test_caja_holds_no_state_the_pool_does():
     assert piscina.burbujas["gravedad"].peso == 2, "el refuerzo vive en la piscina, no en la caja"
 
 
-def test_optimizar_flags_fission_candidates_without_splitting():
-    """Fision no implementada todavia -- optimizar() solo devuelve
-    candidatos por umbral, sin modificar la estructura."""
+def test_fission_demotes_weak_memberships_to_precise_edges(tmp_path):
+    """Un termino sobrecargado de membresias: optimizar() demote las
+    mas debiles (menor peso combinado) partiendo el nodo compartido en
+    unitarios + arista de par precisa. La relacion sigue navegable, pero
+    la activacion conjunta (membresia) cede a la navegacion."""
+    db_path = str(tmp_path / "piscina.db")
+    _reset_id_sequence()
+    la = LaCaja(db_path=db_path)
+    la.procesar_consulta("masa del sol")
+    la.procesar_consulta("masa de la tierra")
+    la.procesar_consulta("masa del planeta")
+    la.procesar_consulta("masa del cuerpo")
+    la.procesar_consulta("masa del sol")
+    la.procesar_consulta("masa del sol")
+
+    antes = len(la.piscina.nodos_de("masa"))
+    assert antes > 2, "masa debe tener multiples contextos de activacion"
+
+    resultado = la.optimizar(max_membresias=2)
+    despues = len(la.piscina.nodos_de("masa"))
+    assert despues < antes
+    assert despues <= 2
+    assert len(resultado["fisionados"]) > 0
+
+    # las relaciones demotadas siguen navegables por arista de par
+    assert la.consultar("masa", "planeta") is True
+    assert la.consultar("masa", "tierra") is True
+    # pero ya no son activacion conjunta (membresia compartida)
+    assert not la.piscina.comparten_nodo("masa", "planeta")
+
+
+def test_fission_keeps_reinforced_memberships_as_activation():
+    """La co-ocurrencia mas reforzada NO se demote: sigue como nodo
+    compartido (activacion); solo las debiles se degradan a navegacion."""
     la = LaCaja()
-    la.piscina.UMBRAL_FISION_PESO = 2
-    la.procesar_consulta("gravedad")
-    la.procesar_consulta("gravedad")
-    la.procesar_consulta("gravedad")
+    for q in ["masa del sol", "masa del sol", "masa de la tierra", "masa del planeta"]:
+        la.procesar_consulta(q)
+    la.optimizar(max_membresias=2)
 
-    resultado = la.optimizar()
-    nodo = next(iter(la.piscina.nodos_de("gravedad")))
+    assert la.piscina.comparten_nodo("masa", "sol"), "el par reforzado conserva activacion conjunta"
+    assert not la.piscina.comparten_nodo("masa", "planeta"), "el par debil se demote a navegacion"
 
-    assert nodo in resultado["candidatos_fision"]
-    assert nodo in la.piscina.nodos, "optimizar() no debe borrar ni dividir nodos todavia"
+
+def test_fission_survives_restart_byte_identical(tmp_path):
+    """fisionar_nodo es un evento del log: tras reiniciar, el replay
+    reconstruye el estado post-fision byte a byte."""
+    db_path = str(tmp_path / "piscina.db")
+    _reset_id_sequence()
+    la1 = LaCaja(db_path=db_path)
+    la1.procesar_consulta("masa del sol")
+    la1.procesar_consulta("masa de la tierra")
+    la1.procesar_consulta("masa del planeta")
+    la1.procesar_consulta("masa del cuerpo")
+    la1.procesar_consulta("masa del sol")
+    la1.optimizar(max_membresias=2)
+    estado = la1.piscina.a_dict()
+    la1.piscina.db.close()
+
+    _reset_id_sequence()
+    la2 = LaCaja(db_path=db_path)
+    assert la2.piscina.a_dict() == estado
+    assert len(la2.piscina.nodos_de("masa")) <= 2
 
 
 def test_replay_reconstructs_identical_state_after_restart(tmp_path):
@@ -265,7 +313,7 @@ def test_no_direct_bypass_of_piscina_internals(tmp_path):
 
     metodos = {fila[0] for fila in la.piscina.db.execute("SELECT metodo FROM eventos").fetchall()}
     assert "crear_burbuja" in metodos
-    assert metodos <= {"crear_burbuja", "reforzar", "crear_unitario", "crear_compartido", "fusionar", "arista_entre"}
+    assert metodos <= {"crear_burbuja", "reforzar", "crear_unitario", "crear_compartido", "fusionar", "arista_entre", "fisionar_nodo"}
 
 
 def test_in_memory_piscina_without_db_path_works_unpersisted():

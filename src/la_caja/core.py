@@ -47,14 +47,28 @@ Persistencia (fusion 16/8/2026):
   - Opt-in: LaCaja(db_path=None) usa Piscina en memoria pura; con
     db_path usa PiscinaPersistente. Todos los metodos mutantes de Piscina
     (crear_burbuja, reforzar, crear_unitario, crear_compartido, fusionar,
-    arista_entre) son el unico punto de entrada de mutacion.
+    arista_entre, fisionar_nodo) son el unico punto de entrada de mutacion.
   - El log es tambien el soporte del criterio temporal de la arista
     estricta: el orden global de nacimiento de burbujas queda persistido.
 
+Fision de membresia (fusion 16/8/2026):
+  - Los nodos NO crecen (cap-2 estructural: ningun nodo supera 2
+    burbujas), asi que el sustrato de fision no es el nodo sino la
+    MEMBRESIA ACUMULADA DE UN TERMINO: con el tiempo un termino se
+    vuelve un hub de activacion ('masa' alcanzo 17 contextos en 15
+    consultas). Activar el termino prima todos esos contextos a la vez.
+  - optimizar() fisiona un termino sobrecargado: demote sus membresias
+    compartidas MAS DEBILES (menor peso combinado) partiendo el nodo
+    {t,u,...} en unitarios + ARISTAS DE PAR PRECISAS entre esos
+    unitarios (sin fan-out). Principio: ACTIVACION para lo reforzado,
+    NAVEGACION para lo debil -- la regla de oro como consolidacion.
+  - Las aristas de fision son honestas (la pareja co-ocurrio; por eso
+    existia el nodo): no son puentes espurios ni fan-out, y el BFS
+    multi-salto sobre ellas es la navegacion normal del modelo.
+  - fisionar_nodo(nid) es un evento del log: el replay lo repite, el
+    estado no diverge.
+
 Pendientes abiertos (no decididos por este archivo):
-  - fision de nodos (optimizar() solo lista candidatos, no divide; al
-    implementarla DEBE registrarse como evento del log o derivarse
-    deterministicamente, o el replay divergira del estado canónico)
   - criterio de capacidad de caja
 """
 import json
@@ -122,8 +136,7 @@ class Piscina:
     """Indice persistente: burbujas + nodos + aristas. Mantiene y
     optimiza la estructura; las cajas solo le informan eventos."""
 
-    UMBRAL_FISION_PESO = 50  # placeholder, ajustable
-    UMBRAL_FISION_BURBUJAS = 20
+    UMBRAL_FISION_MEMBRESIAS = 8
 
     def __init__(self):
         self.burbujas = {}  # termino -> Burbuja
@@ -222,18 +235,57 @@ class Piscina:
     def _peso_nodo(self, nid):
         return sum(self.burbujas[t].peso for t in self.nodos[nid].burbujas)
 
-    def optimizar(self):
-        """Pasada de optimizacion proactiva -- fision de nodos que
-        crecieron demasiado, consolidacion. Pensada para correr entre
-        consultas, no bloqueante. Placeholder: implementacion real
-        pendiente, requiere criterio de cuando/como dividir un nodo sin
-        perder las relaciones."""
-        candidatos = [
-            n.id for n in self.nodos.values()
-            if self._peso_nodo(n.id) > self.UMBRAL_FISION_PESO
-            or len(n.burbujas) > self.UMBRAL_FISION_BURBUJAS
-        ]
-        return {"candidatos_fision": candidatos}
+    def _unitario_de(self, termino):
+        """Reusa el nodo unitario del termino si existe; si no, lo crea.
+        Usa _nuevo_nodo (metodo base privado) en lugar de crear_unitario
+        para no re-disparar el registro del event-sourcing cuando se
+        llama dentro de fisionar_nodo."""
+        for nid in self.nodos_de(termino):
+            if self.nodos[nid].burbujas == {termino}:
+                return nid
+        return self._nuevo_nodo(termino).id
+
+    def fisionar_nodo(self, nid):
+        """Convierte un nodo de co-ocurrencia (activacion conjunta) en
+        una red de navegacion: un unitario por burbuja + aristas de par
+        PRECISAS entre esos unitarios (sin fan-out). La membresia
+        compartida cede a la navegacion: es la regla de oro aplicada
+        como consolidacion. Devuelve None si el nodo no era divisible."""
+        n = self.nodos[nid]
+        if len(n.burbujas) < 2:
+            return None
+        terminos = sorted(n.burbujas)
+        unitarios = {v: self._unitario_de(v) for v in terminos}
+        for v in terminos:
+            self.burbujas[v].nodos.discard(nid)
+        for otro_id in n.aristas:
+            self.nodos[otro_id].aristas.discard(nid)
+        del self.nodos[nid]
+        for i in range(len(terminos)):
+            for j in range(i + 1, len(terminos)):
+                a = unitarios[terminos[i]]
+                b = unitarios[terminos[j]]
+                self.nodos[a].aristas.add(b)
+                self.nodos[b].aristas.add(a)
+        return unitarios
+
+    def optimizar(self, max_membresias=None):
+        """Pasada de consolidacion entre consultas, no bloqueante:
+        para cada termino cuya membresa acumulada supera el limite,
+        demote las membresias compartidas mas debiles (menor peso
+        combinado) hasta volver al limite. Cada demote fisiona el nodo
+        en unitarios + arista de par. Devuelve los nodos fisionados."""
+        limite = max_membresias if max_membresias is not None else self.UMBRAL_FISION_MEMBRESIAS
+        fisionados = []
+        for t in sorted(self.burbujas):
+            while len(self.nodos_de(t)) > limite:
+                compartidos = [nid for nid in self.nodos_de(t) if len(self.nodos[nid].burbujas) > 1]
+                if not compartidos:
+                    break
+                debil = min(compartidos, key=lambda nid: (self._peso_nodo(nid), nid))
+                if self.fisionar_nodo(debil) is not None:
+                    fisionados.append(debil)
+        return {"fisionados": fisionados}
 
     def stats(self):
         return {
@@ -338,6 +390,12 @@ class PiscinaPersistente(Piscina):
         super().arista_entre(a, b)
         self._registrar("arista_entre", {"a": a, "b": b})
 
+    def fisionar_nodo(self, nid):
+        resultado = super().fisionar_nodo(nid)
+        if resultado is not None:
+            self._registrar("fisionar_nodo", {"nid": nid})
+        return resultado
+
     def snapshot(self):
         ultimo = self.db.execute("SELECT MAX(id) FROM eventos").fetchone()[0] or 0
         self.db.execute(
@@ -380,6 +438,8 @@ class PiscinaPersistente(Piscina):
             Piscina.fusionar(self, argumentos["nodo_ids"])
         elif metodo == "arista_entre":
             Piscina.arista_entre(self, argumentos["a"], argumentos["b"])
+        elif metodo == "fisionar_nodo":
+            Piscina.fisionar_nodo(self, argumentos["nid"])
         else:
             raise ValueError(f"evento desconocido en el log: {metodo}")
 
@@ -481,5 +541,5 @@ class LaCaja:
     def stats(self):
         return self.piscina.stats()
 
-    def optimizar(self):
-        return self.piscina.optimizar()
+    def optimizar(self, max_membresias=None):
+        return self.piscina.optimizar(max_membresias)
