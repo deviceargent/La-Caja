@@ -1,0 +1,301 @@
+{
+  "corpus": "blog",
+  "nombre": "blog (4177216.female.24.Science.Taurus.xml, personal/online)",
+  "documentos": 203,
+  "test_a": {
+    "serie": {
+      "0.25": {
+        "terminos": 1402,
+        "nodos": 9130,
+        "aristas": 43813,
+        "relaciones": 2838,
+        "A1_uniforme": {
+          "n": 400,
+          "frac_conect": 0.3075,
+          "frac_rel": 0.0,
+          "frac_membresia": 0.005,
+          "frac_arista": 0.3025,
+          "media": 0.0703125,
+          "p95": 0.25
+        },
+        "A1_top": {
+          "n": 400,
+          "frac_conect": 0.7675,
+          "frac_rel": 0.0325,
+          "frac_membresia": 0.02,
+          "frac_arista": 0.715,
+          "media": 0.25515625,
+          "p95": 1.0
+        },
+        "A1_uniforme_gated2": {
+          "n": 400,
+          "frac_conect": 0.065,
+          "frac_rel": 0.0,
+          "frac_membresia": 0.005,
+          "frac_arista": 0.06,
+          "media": 0.0175
+        },
+        "A1_top_gated2": {
+          "n": 400,
+          "frac_conect": 0.34,
+          "frac_rel": 0.0325,
+          "frac_membresia": 0.02,
+          "frac_arista": 0.2875,
+          "media": 0.11515625
+        },
+        "A3_comp_gigante": 0.22792990142387734
+      },
+      "0.5": {
+        "terminos": 2287,
+        "nodos": 15668,
+        "aristas": 126271,
+        "relaciones": 8171,
+        "A1_uniforme": {
+          "n": 400,
+          "frac_conect": 0.315,
+          "frac_rel": 0.0,
+          "frac_membresia": 0.0,
+          "frac_arista": 0.315,
+          "media": 0.067890625,
+          "p95": 0.25
+        },
+        "A1_top": {
+          "n": 400,
+          "frac_conect": 0.9725,
+          "frac_rel": 0.065,
+          "frac_membresia": 0.02,
+          "frac_arista": 0.8875,
+          "media": 0.37375,
+          "p95": 1.0
+        },
+        "A1_uniforme_gated2": {
+          "n": 400,
+          "frac_conect": 0.0825,
+          "frac_rel": 0.0,
+          "frac_membresia": 0.0,
+          "frac_arista": 0.0825,
+          "media": 0.01578125
+        },
+        "A1_top_gated2": {
+          "n": 400,
+          "frac_conect": 0.6175,
+          "frac_rel": 0.065,
+          "frac_membresia": 0.02,
+          "frac_arista": 0.5325,
+          "media": 0.21484375
+        },
+        "A3_comp_gigante": 0.25925453152923156
+      },
+      "0.75": {
+        "terminos": 2789,
+        "nodos": 19522,
+        "aristas": 190876,
+        "relaciones": 12398,
+        "A1_uniforme": {
+          "n": 400,
+          "frac_conect": 0.31,
+          "frac_rel": 0.0075,
+          "frac_membresia": 0.0075,
+          "frac_arista": 0.295,
+          "media": 0.08234375,
+          "p95": 0.25
+        },
+        "A1_top": {
+          "n": 400,
+          "frac_conect": 0.9825,
+          "frac_rel": 0.085,
+          "frac_membresia": 0.01,
+          "frac_arista": 0.8875,
+          "media": 0.4028125,
+          "p95": 1.0
+        },
+        "A1_uniforme_gated2": {
+          "n": 400,
+          "frac_conect": 0.0625,
+          "frac_rel": 0.0075,
+          "frac_membresia": 0.0075,
+          "frac_arista": 0.0475,
+          "media": 0.025390625
+        },
+        "A1_top_gated2": {
+          "n": 400,
+          "frac_conect": 0.765,
+          "frac_rel": 0.085,
+          "frac_membresia": 0.01,
+          "frac_arista": 0.67,
+          "media": 0.26234375
+        },
+        "A3_comp_gigante": 0.26360004097940787
+      },
+      "1.0": {
+        "terminos": 3390,
+        "nodos": 9692,
+        "aristas": 35854,
+        "relaciones": 17297,
+        "A1_uniforme": {
+          "n": 400,
+          "frac_conect": 0.9975,
+          "frac_rel": 0.0025,
+          "frac_membresia": 0.0,
+          "frac_arista": 0.995,
+          "media": 0.10078125,
+          "p95": 0.25
+        },
+        "A1_top": {
+          "n": 400,
+          "frac_conect": 1.0,
+          "frac_rel": 0.02,
+          "frac_membresia": 0.0125,
+          "frac_arista": 0.9675,
+          "media": 0.27703125,
+          "p95": 0.5
+        },
+        "A1_uniforme_gated2": {
+          "n": 400,
+          "frac_conect": 0.015,
+          "frac_rel": 0.0025,
+          "frac_membresia": 0.0,
+          "frac_arista": 0.0125,
+          "media": 0.0036328125
+        },
+        "A1_top_gated2": {
+          "n": 400,
+          "frac_conect": 0.5725,
+          "frac_rel": 0.02,
+          "frac_membresia": 0.0125,
+          "frac_arista": 0.54,
+          "media": 0.14609375
+        },
+        "A3_comp_gigante": 0.4957697069748246
+      }
+    },
+    "final": {
+      "terminos": 3390,
+      "nodos": 9692,
+      "aristas": 35854,
+      "relaciones": 17297,
+      "A1_uniforme": {
+        "n": 400,
+        "frac_conect": 0.9975,
+        "frac_rel": 0.0025,
+        "frac_membresia": 0.0,
+        "frac_arista": 0.995,
+        "media": 0.10078125,
+        "p95": 0.25
+      },
+      "A1_top": {
+        "n": 400,
+        "frac_conect": 1.0,
+        "frac_rel": 0.02,
+        "frac_membresia": 0.0125,
+        "frac_arista": 0.9675,
+        "media": 0.27703125,
+        "p95": 0.5
+      },
+      "A1_uniforme_gated2": {
+        "n": 400,
+        "frac_conect": 0.015,
+        "frac_rel": 0.0025,
+        "frac_membresia": 0.0,
+        "frac_arista": 0.0125,
+        "media": 0.0036328125
+      },
+      "A1_top_gated2": {
+        "n": 400,
+        "frac_conect": 0.5725,
+        "frac_rel": 0.02,
+        "frac_membresia": 0.0125,
+        "frac_arista": 0.54,
+        "media": 0.14609375
+      },
+      "A3_comp_gigante": 0.4957697069748246
+    },
+    "veredicto": {
+      "A1": "FALSA",
+      "A2": "ok",
+      "A3": "ok"
+    }
+  },
+  "test_b": {
+    "precision_pct": 45.56230499989512,
+    "recall": 0.40272879690119673,
+    "n_gt": 42393,
+    "discriminacion": {
+      "obs": 1.2111926923744,
+      "inf": 0.003355704697986577,
+      "ale": 0.016666666666666666
+    },
+    "veredicto": {
+      "B1": "FALSA",
+      "B2": "ok",
+      "B3": "ok"
+    }
+  },
+  "test_c": {
+    "docs_futuros_con_tema": 82,
+    "consultas": 3216,
+    "presupuesto_primado": 50,
+    "hit5_modelo": 0.0850153782502275,
+    "hit5_frecuencia": 0.06467661691542288,
+    "hit5_aleatorio": 0.0017410590079593596,
+    "techo_primado": 0.12113164481405131,
+    "hit5_por_vacio": {
+      "<=1m": {
+        "n": 1675,
+        "hit5_modelo": 0.10455797051142825,
+        "hit5_frecuencia": 0.06395115949411159,
+        "hit5_aleatorio": 0.0017993564362966778,
+        "techo_relaciones": 0.128416058692352,
+        "techo_co_membresia": 0.035416634301279254,
+        "techo_primado": 0.16383269299363126
+      },
+      "1-6m": {
+        "n": 580,
+        "hit5_modelo": 0.08107739545293592,
+        "hit5_frecuencia": 0.07197832778895227,
+        "hit5_aleatorio": 0.0018325716157768805,
+        "techo_relaciones": 0.07623861754233054,
+        "techo_co_membresia": 0.02281527719391097,
+        "techo_primado": 0.09905389473624149
+      },
+      "6m-2a": {
+        "n": 26,
+        "hit5_modelo": 0.033033544361724704,
+        "hit5_frecuencia": 0.08582706032471918,
+        "hit5_aleatorio": 0.002876947613789719,
+        "techo_relaciones": 0.013847863162504128,
+        "techo_co_membresia": 0.019185681199220574,
+        "techo_primado": 0.033033544361724704
+      },
+      ">2a": {
+        "n": 935,
+        "hit5_modelo": 0.05389421853473966,
+        "hit5_frecuencia": 0.06085868894259686,
+        "hit5_aleatorio": 0.0015482690520761942,
+        "techo_relaciones": 0.04253434735676945,
+        "techo_co_membresia": 0.018245842864868776,
+        "techo_primado": 0.06078019022163822
+      }
+    },
+    "veredicto": {
+      "C1": "ok",
+      "C2": "ok"
+    }
+  },
+  "falsacion": {
+    "A": {
+      "A1": "FALSA",
+      "A2": "ok",
+      "A3": "ok"
+    },
+    "B": {
+      "B1": "FALSA",
+      "B2": "ok",
+      "B3": "ok"
+    },
+    "C": {
+      "C1": "ok",
+      "C2": "ok"
+    }
+  }
+}
