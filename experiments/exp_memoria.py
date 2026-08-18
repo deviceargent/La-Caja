@@ -23,10 +23,11 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "src"))
 from la_caja import LaCaja  # noqa: E402
 
-DATOS = r"C:\Users\Agentic\AppData\Local\Temp\opencode\memoria_exp"
+DATOS = os.environ.get("MEMORIA_DATOS") or os.path.join(ROOT, "memoria_exp")
 ENRON_PARQUET = os.path.join(DATOS, "enron_00000.parquet")
 ENRON_REMITENTE = "jeff.dasovich@enron.com"
 BLOGS_DIR = os.path.join(DATOS, "blogs", "blogs")
+RESULTADOS = os.environ.get("MEMORIA_RESULTADOS") or os.path.join(ROOT, "experiments", "results")
 
 VENTANA_GT = 4  # co-ocurrencia del ground truth = ventana del modelo
 OPTIMIZAR_CADA = 200
@@ -637,7 +638,7 @@ def run(corpus):
             "C": c.get("veredicto", {}),
         },
     }
-    salida = os.path.join(DATOS, f"resultado_{corpus}.json")
+    salida = os.path.join(RESULTADOS, f"resultado_{corpus}.json")
     with open(salida, "w", encoding="utf-8") as fh:
         json.dump(resultado, fh, ensure_ascii=False, indent=2)
     print(json.dumps(resultado["falsacion"], indent=2))

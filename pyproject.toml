@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "la-caja"
-version = "0.2.0"
+version = "0.6.0"
 description = "La Caja: memoria contextual asociativa con olvido, confianza y primado de contexto."
 requires-python = ">=3.10"
 
