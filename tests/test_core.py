@@ -798,3 +798,140 @@ def test_primado_prefiere_relaciones_observadas():
     primado = la.contexto_primado("masa", presupuesto=5)
     assert primado[0] == "energia", "la relacion observada reforzada encabeza"
     assert "energia" in primado and "fuerza" in primado
+
+
+# ---------------------------------------------------------------- traza dormida
+
+def _olvidar_alfa_beta(la):
+    """Escenario base: alfa-beta co-ocurren (fuerza 1), el ruido gamma
+    supera la gracia de la incidental y optimizar() la poda."""
+    la.piscina.UMBRAL_DECAY_RELACION = 5
+    la.procesar_consulta("alfa")
+    la.procesar_consulta("beta")
+    la.declarar_relacion("alfa", "beta")
+    for _ in range(18):
+        la.procesar_consulta("gamma")
+    la.optimizar()
+    assert ("alfa", "beta") not in la.piscina.relaciones
+
+
+def test_historial_registra_lo_olvidado():
+    """La poda deja traza dormida: historial() devuelve el partner
+    olvidado con su fuerza historica (los refuerzos son la fuerza pico)."""
+    la = LaCaja()
+    _olvidar_alfa_beta(la)
+
+    h = la.historial("alfa")
+    assert len(h) == 1
+    assert h[0]["partner"] == "beta"
+    assert h[0]["fuerza_pico"] == 1
+    assert h[0]["capturas"] == 1
+    assert la.historial("gamma") == [], "sin relaciones olvidadas: sin traza"
+
+
+def test_historial_es_inerte(tmp_path):
+    """La capa de traza NO alimenta las capas vivas y consultarla no
+    muta nada: el estado serializado queda identico, el par olvidado
+    sigue sin relacion ni primado (no-interferencia)."""
+    db_path = str(tmp_path / "piscina.db")
+    _reset_id_sequence()
+    la1 = LaCaja(db_path=db_path)
+    _olvidar_alfa_beta(la1)
+
+    antes = la1.piscina.a_dict()
+    assert la1.historial("alfa")[0]["partner"] == "beta"
+    assert la1.piscina.a_dict() == antes, "historial no muta el estado"
+
+    assert la1.consultar("alfa", "beta") == 0, "la traza no revive la relacion"
+    assert "beta" not in la1.contexto_primado("alfa", presupuesto=5)
+    la1.piscina.db.close()
+
+
+def test_traza_dormida_replay_byte_identical(tmp_path):
+    """La captura de traza vive en el estado (a_dict) y se reconstruye
+    byte a byte por replay: el snapshot + eventos no divergen."""
+    db_path = str(tmp_path / "piscina.db")
+    _reset_id_sequence()
+    la1 = LaCaja(db_path=db_path)
+    _olvidar_alfa_beta(la1)
+    estado = la1.piscina.a_dict()
+    assert estado["trazas"], "el estado serializado incluye la traza"
+    la1.piscina.db.close()
+
+    _reset_id_sequence()
+    la2 = LaCaja(db_path=db_path)
+    assert la2.piscina.a_dict() == estado
+    assert la2.historial("alfa")[0]["partner"] == "beta"
+
+
+def test_rehidratacion_reforza_la_reobservacion():
+    """Con rehidratar=True, la re-observacion de una pareja olvidada
+    vuelve con la fuerza historica amortizada; sin rehidratar, la
+    re-observacion nace limpia (fuerza 1)."""
+    la_off = LaCaja(rehidratar=False)
+    _olvidar_alfa_beta(la_off)
+    la_off.procesar_consulta("alfa beta")
+    assert la_off.piscina.relaciones[("alfa", "beta")]["fuerza"] == 1
+
+    la_on = LaCaja(rehidratar=True)
+    _olvidar_alfa_beta(la_on)
+    la_on.procesar_consulta("alfa beta")
+    assert la_on.piscina.relaciones[("alfa", "beta")]["fuerza"] > 1
+
+
+def test_rehidratacion_amortiza_por_vacio():
+    """La fuerza historica se amortiza por el vacio (media vida en
+    eventos): re-observar tras un vacio corto da mas fuerza que tras un
+    vacio largo; en ambos casos la observacion manda (fuerza >= 1)."""
+
+    def _correr(gammas):
+        la = LaCaja(rehidratar=True)
+        la.piscina.UMBRAL_DECAY_RELACION = 1000  # sin decaimiento durante el test
+        la.procesar_consulta("alfa")
+        la.procesar_consulta("beta")
+        for _ in range(8):
+            la.declarar_relacion("alfa", "beta")  # refuerzos 8 => fuerza pico 8
+        la.piscina.prune_relacion("alfa", "beta")  # forzar el olvido (captura la traza)
+        for _ in range(gammas):
+            la.procesar_consulta("gamma")
+        la.procesar_consulta("alfa beta")
+        return la.piscina.relaciones[("alfa", "beta")]["fuerza"]
+
+    corto = _correr(0)
+    largo = _correr(1600)  # >= media vida (1500 eventos)
+    assert corto > largo, (corto, largo)
+    assert corto > 1 and largo > 1
+
+
+def test_rehidratacion_nunca_crea_relaciones_sin_observacion():
+    """Regla de oro intacta: la traza no fabrica relaciones. Si alfa
+    reaparece solo (sin co-ocurrir con beta), nada se restaura."""
+    la = LaCaja(rehidratar=True)
+    la.piscina.UMBRAL_DECAY_RELACION = 1000
+    la.procesar_consulta("alfa")
+    la.procesar_consulta("beta")
+    la.declarar_relacion("alfa", "beta")
+    la.piscina.prune_relacion("alfa", "beta")
+    assert la.historial("alfa")[0]["partner"] == "beta"
+
+    la.procesar_consulta("alfa")  # reaparicion SIN co-ocurrencia
+
+    assert ("alfa", "beta") not in la.piscina.relaciones
+    assert la.consultar("alfa", "beta") == 0
+
+
+def test_traza_y_rehidratacion_replay_byte_identical(tmp_path):
+    """refuerzo_historico es un evento del log: tras reiniciar, el replay
+    reconstruye la poda + la re-observacion rehidratada byte a byte."""
+    db_path = str(tmp_path / "piscina.db")
+    _reset_id_sequence()
+    la1 = LaCaja(db_path=db_path, rehidratar=True)
+    _olvidar_alfa_beta(la1)
+    la1.procesar_consulta("alfa beta")  # re-observacion -> refuerzo_historico
+    assert la1.piscina.relaciones[("alfa", "beta")]["fuerza"] > 1
+    estado = la1.piscina.a_dict()
+    la1.piscina.db.close()
+
+    _reset_id_sequence()
+    la2 = LaCaja(db_path=db_path, rehidratar=True)
+    assert la2.piscina.a_dict() == estado

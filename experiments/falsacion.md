@@ -354,3 +354,37 @@ chico y denso casi completamente alcanzable) y B1 (optimize unico
 final, ya documentado). Limite del modelo reportado: no hay senal para
 temas dormidos >= 1 mes. Regla de oro intacta en todas las corrientes:
 nada inferido supera a lo observado (B3), jamas 1.0 sin observacion.
+
+## Post-falsacion (18/8/2026): capa de traza dormida
+
+El limite honesto de la falsacion (temas dormidos >= 1 mes sin senal) se
+aborda SIN tocar el grafo vivo, con una capa SEPARADA e inerte:
+
+- **Traza dormida (siempre activa):** al podar una relacion, la piscina
+  registra por termino el partner olvidado con su fuerza historica (los
+  refuerzos son la fuerza pico), consultable con `historial(termino)`.
+  Es la unica capa que recuerda lo olvidado, y NO interviene en
+  `consultar`, navegacion ni `contexto_primado`.
+- **Rehidratacion (opt-in, `rehidratar=True`):** cuando una pareja
+  olvidada vuelve a co-ocurrir, la re-observacion refuerza la relacion
+  con la fuerza historica amortizada por el vacio (`0.5**gap/1500`).
+  Nunca crea relaciones: sin co-ocurrencia real no hay refuerzo.
+
+Pre-registro de no-interferencia (estas pruebas se fijan aqui, no a la
+vista de resultados):
+
+1. **Inercia:** con la traza activada, la suite completa (53 tests) y
+   los resultados canonicos quedan identicos -- la captura solo escribe
+   en `_trazas`, nunca en las capas vivas. `historial()` es solo lectura
+   (el estado serializado no cambia al consultarlo).
+2. **Regla de oro:** `rehidratar=True` no fabrica relaciones: un termino
+   que reaparece sin co-ocurrir con su partner historico no restaura
+   nada (`consultar == 0`).
+3. **Replay byte-identical:** la traza vive en `a_dict` y
+   `refuerzo_historico` es un evento del log; snapshot + replay
+   reconstruyen poda y rehidratacion byte a byte.
+
+La validacion de la rehidratacion sobre el corpus Enron (si mejora C
+para vacios >= 1 mes) queda como trabajo pendiente: requiere una corrida
+completa con `rehidratar=True` contra los mismos criterios
+pre-registrados.

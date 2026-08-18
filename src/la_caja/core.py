@@ -110,6 +110,21 @@ Decay de peso / olvido (fusion 16/8/2026):
     de optimizar() (consolidacion), antes de la fision, para que los
     pesos de la fision sean los efectivos.
 
+Traza dormida (18/8/2026, post-falsacion):
+  - Cuando el olvido poda una relacion (prune_relacion), lo olvidado no
+    se pierde: la PISCINA registra una TRAZA DORMIDA inerte por termino
+    (partner, fuerza historica = refuerzos, evento de la poda, capturas),
+    consultable con historial(termino).
+  - La traza es una capa SEPARADA y NO-interferente: nunca alimenta
+    consultar(), la navegacion ni contexto_primado() -- los criterios de
+    la falsacion (A1/A2/B3) quedan intactos con la captura activada.
+  - REHIDRATACION (opt-in, rehidratar=True): cuando una pareja olvidada
+    vuelve a co-ocurrir de verdad, la re-observacion refuerza la
+    relacion con la fuerza historica amortizada por el vacio
+    (0.5 ** (gap / MEDIA_VIDA_REHIDRATACION)). Nunca crea relaciones:
+    sin co-ocurrencia real no hay refuerzo -- la regla de oro (jamas 1.0
+    sin observacion) se mantiene.
+
 Resolucion de sinonimos / identidad (fusion 16/8/2026):
   - Capa de identidad pre-caja en LaCaja: la piscina SOLO ve conceptos
     canonicos. 'masa del sol' y 'masa solar' convergen al mismo concepto
@@ -281,6 +296,8 @@ class Piscina:
     FACTOR_CONSOLIDACION = 3.0  # repeticion espaciada (Ebbinghaus): la gracia de
     # no-uso crece GEOMETRICAMENTE con cada refuerzo, no aditivamente
     UMBRALES_NIVEL = (1, 3, 10, 30)  # promocion: umbrales de peso por nivel
+    MEDIA_VIDA_REHIDRATACION = 1500  # eventos (~1 mes en Enron) en que la
+    # fuerza historica de una re-observacion se reduce a la mitad
 
     def __init__(self):
         self.burbujas = {}  # termino -> Burbuja
@@ -288,7 +305,9 @@ class Piscina:
         self.relaciones = {}  # par (conceptos) -> {"fuerza", "ultimo_evento"}
         self.relaciones_por_termino = {}  # termino -> set(partners) (indice de primado)
         self.aristas_por_relacion = {}  # par -> set de aristas exactas que materializo
+        self._trazas = {}  # traza dormida: termino -> partner -> {"fuerza_pico", "ultimo_evento", "capturas"}
         self._n_eventos = 0  # contador de mutaciones (escala del olvido)
+        self.rehidratar = False  # opt-in: refuerzo historico al re-observar
 
     def existe(self, termino):
         return termino in self.burbujas
@@ -412,10 +431,12 @@ class Piscina:
     def prune_relacion(self, a, b):
         """Olvido completo de una relacion observada: elimina la
         relacion y sus aristas de navegacion exactas. Se llama desde
-        decaer() dentro de la pasada de consolidacion."""
+        decaer() dentro de la pasada de consolidacion. Lo olvidado se
+        registra en la TRAZA DORMIDA (capa inerte)."""
         clave = tuple(sorted((a, b)))
         if clave not in self.relaciones:
             return
+        refuerzos = self.relaciones[clave].get("refuerzos", 1)
         for x, y in self.aristas_por_relacion.pop(clave, set()):
             if x in self.nodos and y in self.nodos:
                 self.nodos[x].aristas.discard(y)
@@ -427,6 +448,62 @@ class Piscina:
                 partners.discard(a if t == b else b)
                 if not partners:
                     del self.relaciones_por_termino[t]
+        self._capturar_traza(a, b, refuerzos)
+
+    def _capturar_traza(self, a, b, refuerzos):
+        """Registra en la traza dormida la relacion olvidada, por cada
+        termino del par. La fuerza historica es el numero de refuerzos:
+        cada observacion suma +1 a fuerza y refuerzos por igual, asi que
+        refuerzos == fuerza pico. Capa INERTE: nunca alimenta consultar,
+        navegacion ni contexto_primado."""
+        for t, p in ((a, b), (b, a)):
+            traza = self._trazas.setdefault(t, {})
+            vieja = traza.get(p)
+            if vieja is None:
+                traza[p] = {"fuerza_pico": refuerzos, "ultimo_evento": self._n_eventos, "capturas": 1}
+            else:
+                vieja["fuerza_pico"] = max(vieja["fuerza_pico"], refuerzos)
+                vieja["ultimo_evento"] = self._n_eventos
+                vieja["capturas"] += 1
+
+    def traza_de(self, a, b):
+        """Traza dormida de la pareja (a, b): el registro de su olvido,
+        o None si nunca se olvido."""
+        return self._trazas.get(a, {}).get(b)
+
+    def historial(self, termino):
+        """Traza dormida de un termino: los partners con los que co-
+        ocurrio y fue olvidado (fuerza_pico, evento de la ultima poda,
+        capturas), ordenados por fuerza historica. Solo lectura: la capa
+        es inerte y no altera el estado vivo."""
+        trazas = self._trazas.get(termino)
+        if not trazas:
+            return []
+        return sorted(
+            (
+                {
+                    "partner": p,
+                    "fuerza_pico": d["fuerza_pico"],
+                    "ultimo_evento": d["ultimo_evento"],
+                    "capturas": d["capturas"],
+                }
+                for p, d in trazas.items()
+            ),
+            key=lambda r: (r["fuerza_pico"], r["ultimo_evento"]),
+            reverse=True,
+        )
+
+    def refuerzo_historico(self, a, b, extra):
+        """Rehidratacion por re-observacion: refuerza una relacion que
+        acaba de volver a co-ocurrir con la fuerza historica amortizada.
+        Solo toca relaciones ya presentes (la observacion real la creo);
+        nunca crea relaciones ni materializa aristas."""
+        clave = tuple(sorted((a, b)))
+        datos = self.relaciones.get(clave)
+        if datos is not None:
+            datos["fuerza"] += extra
+            datos["refuerzos"] += 1
+            datos["ultimo_evento"] = self._n_eventos
 
     def relacion(self, a, b, max_saltos=10):
         """NAVEGACION con consciencia de distancia. Devuelve la confianza
@@ -622,6 +699,11 @@ class Piscina:
             "aristas_por_relacion": [
                 [a, b, [[x, y] for x, y in sorted(es)]] for (a, b), es in sorted(self.aristas_por_relacion.items())
             ],
+            "trazas": [
+                [t, p, d["fuerza_pico"], d["ultimo_evento"], d["capturas"]]
+                for t, ps in sorted(self._trazas.items())
+                for p, d in sorted(ps.items())
+            ],
         }
 
     def cargar_dict(self, data):
@@ -660,6 +742,13 @@ class Piscina:
         for (a, b) in self.relaciones:
             self.relaciones_por_termino.setdefault(a, set()).add(b)
             self.relaciones_por_termino.setdefault(b, set()).add(a)
+        self._trazas = {}
+        for t, p, fp, ue, cap in data.get("trazas", []):
+            self._trazas.setdefault(t, {})[p] = {
+                "fuerza_pico": fp,
+                "ultimo_evento": ue,
+                "capturas": cap,
+            }
 
 
 class PiscinaPersistente(Piscina):
@@ -749,6 +838,10 @@ class PiscinaPersistente(Piscina):
         super().prune_relacion(a, b)
         self._registrar("prune_relacion", {"a": a, "b": b})
 
+    def refuerzo_historico(self, a, b, extra):
+        super().refuerzo_historico(a, b, extra)
+        self._registrar("refuerzo_historico", {"a": a, "b": b, "extra": extra})
+
     def snapshot(self):
         ultimo = self.db.execute("SELECT MAX(id) FROM eventos").fetchone()[0] or 0
         self.db.execute(
@@ -802,6 +895,8 @@ class PiscinaPersistente(Piscina):
             Piscina.fijar_fuerza_relacion(self, argumentos["a"], argumentos["b"], argumentos["fuerza"])
         elif metodo == "prune_relacion":
             Piscina.prune_relacion(self, argumentos["a"], argumentos["b"])
+        elif metodo == "refuerzo_historico":
+            Piscina.refuerzo_historico(self, argumentos["a"], argumentos["b"], argumentos["extra"])
         else:
             raise ValueError(f"evento desconocido en el log: {metodo}")
 
@@ -819,10 +914,11 @@ class Caja:
     asociaciones marginales (ver docstring del modulo).
     """
 
-    def __init__(self, piscina, filtro_ontologico=None, ventana_coocurrencia=None):
+    def __init__(self, piscina, filtro_ontologico=None, ventana_coocurrencia=None, rehidratar=False):
         self.piscina = piscina
         self.filtro = filtro_ontologico or FILTRO_ONTOLOGICO_DEFAULT
         self.ventana = ventana_coocurrencia if ventana_coocurrencia is not None else VENTANA_COOCURRENCIA
+        self.rehidratar = rehidratar
 
     def _filtrar(self, terminos):
         vistos = []
@@ -879,7 +975,23 @@ class Caja:
                 else:
                     self.piscina.arista_entre(t, vecino)
                     eventos.append({"tipo": "arista", "terminos": [vecino, t]})
+                    if self.rehidratar:
+                        self._rehidratar(t, vecino)
         return eventos
+
+    def _rehidratar(self, a, b):
+        """Rehidratacion por re-observacion: si la pareja recien co-
+        ocurrida tiene traza dormida (fue observada y luego olvidada),
+        la re-observacion vuelve con la fuerza historica amortizada por
+        el vacio (media vida en eventos). Nunca crea relaciones: la
+        observacion real ya lo hizo; solo refuerza la existente."""
+        traza = self.piscina.traza_de(a, b) or self.piscina.traza_de(b, a)
+        if traza is None:
+            return
+        gap = self.piscina._n_eventos - traza["ultimo_evento"]
+        bonus = traza["fuerza_pico"] * (0.5 ** (gap / self.piscina.MEDIA_VIDA_REHIDRATACION))
+        extra = max(1, int(bonus))
+        self.piscina.refuerzo_historico(a, b, extra)
 
 
 class LaCaja:
@@ -888,9 +1000,10 @@ class LaCaja:
     db_path usa PiscinaPersistente (event-sourcing sobre SQLite); sin
     el, Piscina en memoria pura."""
 
-    def __init__(self, filtro_ontologico=None, db_path=None, ventana_coocurrencia=None):
+    def __init__(self, filtro_ontologico=None, db_path=None, ventana_coocurrencia=None, rehidratar=False):
         self.piscina = PiscinaPersistente(db_path) if db_path else Piscina()
-        self.caja = Caja(self.piscina, filtro_ontologico, ventana_coocurrencia)
+        self.piscina.rehidratar = rehidratar
+        self.caja = Caja(self.piscina, filtro_ontologico, ventana_coocurrencia, rehidratar)
 
     def normalizar_termino(self, termino):
         """Resuelve una forma superficial a su concepto canonico: alias
@@ -939,6 +1052,11 @@ class LaCaja:
 
     def stats(self):
         return self.piscina.stats()
+
+    def historial(self, termino):
+        """Traza dormida del termino (capa inerte): los partners con los
+        que co-ocurrio y fue olvidado, con su fuerza historica."""
+        return self.piscina.historial(termino)
 
     def optimizar(self, max_membresias=None):
         return self.piscina.optimizar(max_membresias)
