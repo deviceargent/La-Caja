@@ -83,3 +83,7 @@ Los experimentos necesitan los corpus (parquet de Enron y Blog
 Authorship). Apuntá con `MEMORIA_DATOS=<dir>` al directorio con
 `enron_00000.parquet` y `blogs/blogs/`; los resultados canónicos van a
 `MEMORIA_RESULTADOS` (default `experiments/results/`).
+
+## Licencia
+
+MIT — ver [LICENSE](LICENSE).

@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,6 +7,7 @@ name = "la-caja"
 version = "0.6.0"
 description = "La Caja: memoria contextual asociativa con olvido, confianza y primado de contexto."
 requires-python = ">=3.10"
+license = "MIT"
 
 [tool.setuptools.packages.find]
 where = ["src"]
