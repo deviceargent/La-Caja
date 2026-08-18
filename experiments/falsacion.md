@@ -335,3 +335,22 @@ fallo y separa capas que el criterio original mezclaba).
   verdad) no tienen senal en la memoria (techo <= 0.006) -- la
   recuperacion de temas dormidos largos es un limite del modelo, no del
   criterio.
+
+## Conclusion final (18/8/2026)
+
+Falsacion concluida con el modelo a F=3 (commit e0c5fd6). Resultados
+canonicos en `experiments/results/resultado_{enron,blog}.json`.
+
+| corriente | A1 | A2 | A3 | B1 | B2 | B3 | C1 | C2 |
+|---|---|---|---|---|---|---|---|---|
+| **Enron** | ok | ok | ok | ok (67.8) | ok (0.338) | ok (25x) | ok (0.064 vs 0.030) | ok (64% techo) |
+| **Blog** | FALSA | ok | ok | FALSA (46.4) | ok | ok | ok (0.085 vs 0.065) | ok (70% techo) |
+
+La tesis de arquitectura (memoria observada esparsa y fiel, con
+navegacion multi-salto que discrimina lo observado de lo inferido y
+recupera el contexto activo) SOBREVIVE en la corriente Enron y queda
+REFUTADA en el registro Blog para A1 (cordura de navegacion: grafo
+chico y denso casi completamente alcanzable) y B1 (optimize unico
+final, ya documentado). Limite del modelo reportado: no hay senal para
+temas dormidos >= 1 mes. Regla de oro intacta en todas las corrientes:
+nada inferido supera a lo observado (B3), jamas 1.0 sin observacion.
