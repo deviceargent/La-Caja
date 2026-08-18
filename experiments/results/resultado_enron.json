@@ -7,98 +7,98 @@
       "0.25": {
         "terminos": 12014,
         "nodos": 38038,
-        "aristas": 305772,
-        "relaciones": 26686,
+        "aristas": 320676,
+        "relaciones": 27981,
         "A1_uniforme": {
           "n": 400,
-          "frac_conect": 0.4,
-          "media": 0.054013671875,
+          "frac_conect": 0.4125,
+          "media": 0.055322265625,
           "p95": 0.25
         },
         "A1_top": {
           "n": 400,
-          "frac_conect": 0.9825,
-          "media": 0.339375,
+          "frac_conect": 0.9925,
+          "media": 0.348125,
           "p95": 0.5
         },
-        "A3_comp_gigante": 0.3635049161364951
+        "A3_comp_gigante": 0.3722856091277144
       },
       "0.5": {
         "terminos": 19291,
         "nodos": 63418,
-        "aristas": 887745,
-        "relaciones": 63323,
+        "aristas": 931822,
+        "relaciones": 66550,
         "A1_uniforme": {
           "n": 400,
-          "frac_conect": 0.5075,
-          "media": 0.07955078125,
+          "frac_conect": 0.53,
+          "media": 0.08349609375,
           "p95": 0.25
         },
         "A1_top": {
           "n": 400,
           "frac_conect": 0.985,
-          "media": 0.4075,
+          "media": 0.414375,
           "p95": 1.0
         },
-        "A3_comp_gigante": 0.3937052571825034
+        "A3_comp_gigante": 0.4079914219937557
       },
       "0.75": {
         "terminos": 23441,
         "nodos": 74256,
-        "aristas": 1184452,
-        "relaciones": 79454,
+        "aristas": 1297512,
+        "relaciones": 87316,
         "A1_uniforme": {
           "n": 400,
-          "frac_conect": 0.435,
-          "media": 0.07455810546875,
+          "frac_conect": 0.4575,
+          "media": 0.07998291015625,
           "p95": 0.25
         },
         "A1_top": {
           "n": 400,
           "frac_conect": 0.99,
-          "media": 0.4453125,
+          "media": 0.4471875,
           "p95": 1.0
         },
-        "A3_comp_gigante": 0.3518638224520578
+        "A3_comp_gigante": 0.38022516698987285
       },
       "1.0": {
         "terminos": 26283,
         "nodos": 78404,
-        "aristas": 406435,
-        "relaciones": 28571,
+        "aristas": 569692,
+        "relaciones": 40214,
         "A1_uniforme": {
           "n": 400,
-          "frac_conect": 0.1525,
-          "media": 0.02390625,
+          "frac_conect": 0.2275,
+          "media": 0.035224609375,
           "p95": 0.25
         },
         "A1_top": {
           "n": 400,
-          "frac_conect": 0.985,
-          "media": 0.3621875,
-          "p95": 0.5
+          "frac_conect": 0.98,
+          "media": 0.389375,
+          "p95": 1.0
         },
-        "A3_comp_gigante": 0.19444161012193256
+        "A3_comp_gigante": 0.2529080148971991
       }
     },
     "final": {
       "terminos": 26283,
       "nodos": 78404,
-      "aristas": 406435,
-      "relaciones": 28571,
+      "aristas": 569692,
+      "relaciones": 40214,
       "A1_uniforme": {
         "n": 400,
-        "frac_conect": 0.1525,
-        "media": 0.02390625,
+        "frac_conect": 0.2275,
+        "media": 0.035224609375,
         "p95": 0.25
       },
       "A1_top": {
         "n": 400,
-        "frac_conect": 0.985,
-        "media": 0.3621875,
-        "p95": 0.5
+        "frac_conect": 0.98,
+        "media": 0.389375,
+        "p95": 1.0
       },
-      "A3_comp_gigante": 0.19444161012193256
+      "A3_comp_gigante": 0.2529080148971991
     },
     "veredicto": {
       "A1": "FALSA",
@@ -107,42 +107,42 @@
     }
   },
   "test_b": {
-    "precision_pct": 65.47566932038951,
-    "recall": 0.2498337475062126,
+    "precision_pct": 67.79688960422399,
+    "recall": 0.33761873974237827,
     "n_gt": 1011639,
     "discriminacion": {
-      "obs": 27.545413181197716,
+      "obs": 25.25692544884866,
       "inf": 0.0,
       "ale": 0.0033333333333333335
     },
     "veredicto": {
       "B1": "ok",
-      "B2": "FALSA",
+      "B2": "ok",
       "B3": "ok"
     }
   },
   "test_c": {
     "docs_futuros_con_tema": 2017,
     "consultas": 218196,
-    "hit5_modelo": 0.028316087079651546,
+    "hit5_modelo": 0.027346870875424503,
     "hit5_frecuencia": 0.029528497314341234,
     "hit5_aleatorio": 0.0002104015417632075,
     "hit5_por_vacio": {
       "<=1m": {
         "n": 200604,
-        "hit5_modelo": 0.03047807904160945,
+        "hit5_modelo": 0.02937877724484785,
         "hit5_frecuencia": 0.029859363502931075,
         "hit5_aleatorio": 0.00020948520251388354
       },
       "1-6m": {
         "n": 15346,
-        "hit5_modelo": 0.003999700080954494,
+        "hit5_modelo": 0.0045721044824459526,
         "hit5_frecuencia": 0.02545923680544842,
         "hit5_aleatorio": 0.00021958694358780272
       },
       "6m-2a": {
         "n": 2245,
-        "hit5_modelo": 0.0013598979627167662,
+        "hit5_modelo": 0.0014762101207356165,
         "hit5_frecuencia": 0.027786183085429142,
         "hit5_aleatorio": 0.0002295875301431195
       },
@@ -166,7 +166,7 @@
     },
     "B": {
       "B1": "ok",
-      "B2": "FALSA",
+      "B2": "ok",
       "B3": "ok"
     },
     "C": {

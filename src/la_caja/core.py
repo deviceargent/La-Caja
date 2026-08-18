@@ -278,6 +278,8 @@ class Piscina:
     PISO_DECAY = 1  # el rastro del termino no desaparece nunca
     UMBRAL_DECAY_RELACION = 400  # eventos de no-uso antes de olvidar una relacion
     FACTOR_DECAY_RELACION = 4  # olvido de relaciones 4x mas suave que el de terminos
+    FACTOR_CONSOLIDACION = 3.0  # repeticion espaciada (Ebbinghaus): la gracia de
+    # no-uso crece GEOMETRICAMENTE con cada refuerzo, no aditivamente
     UMBRALES_NIVEL = (1, 3, 10, 30)  # promocion: umbrales de peso por nivel
 
     def __init__(self):
@@ -510,11 +512,12 @@ class Piscina:
         (determinista para el replay), no en reloj de pared. Pura
         lectura de estado: cada cambio se delega en fijar_peso, que el
         event-sourcing registra. Tambien olvida RELACIONES con gracia
-        PROPORCIONAL AL REFUERZO HISTORICO (UMBRAL_DECAY_RELACION x
-        refuerzos): la fuerza decae suave hacia el piso 0 y, en 0, se
-        PODE la relacion y sus aristas exactas (prune_relacion). Un tema
-        muy reforzado aguanta vacios largos; la co-ocurrencia incidental
-        de una sola vez muere rapido."""
+        MULTIPLICATIVA sobre el refuerzo historico (repeticion espaciada:
+        UMBRAL_DECAY_RELACION x FACTOR_CONSOLIDACION**refuerzos): la
+        fuerza decae suave hacia el piso 0 y, en 0, se PODE la relacion y
+        sus aristas exactas (prune_relacion). Un tema recurrente aguanta
+        vacios largos; la co-ocurrencia incidental de una sola vez muere
+        en la escala base."""
         umbral = umbral if umbral is not None else self.UMBRAL_DECAY_EVENTOS
         decaidos = []
         for t, b in self.burbujas.items():
@@ -524,15 +527,19 @@ class Piscina:
                 decaidos.append(t)
         # Las relaciones se olvidan con su propia escala: mas lentas que
         # los terminos (FACTOR_DECAY_RELACION=4) y con una gracia de
-        # no-uso PROPORCIONAL AL REFUERZO HISTORICO acumulado
-        # (UMBRAL_DECAY_RELACION x refuerzos): un tema muy reforzado se
-        # banca vacios largos antes de podarse (el historial lo
-        # distingue de una coincidencia incidental), una relacion vista
-        # una sola vez muere rapido. La fuerza decae suave y en 0 se
+        # no-uso MULTIPLICATIVA sobre el refuerzo historico acumulado
+        # (repeticion espaciada): UMBRAL_DECAY_RELACION x
+        # FACTOR_CONSOLIDACION**refuerzos. Cada refuerzo CONSOLIDA la
+        # huella y el intervalo hasta el proximo refuerzo necesario crece
+        # geometricamente, no aditivamente -- un tema recurrente de verdad
+        # se banca vacios largos, una coincidencia incidental (refuerzos
+        # 1) muere en la escala base. La fuerza decae suave y en 0 se
         # poda la relacion y sus aristas exactas.
         for clave, datos in list(self.relaciones.items()):
-            refuerzos = datos.get("refuerzos", 1)
-            gracia = self.UMBRAL_DECAY_RELACION * refuerzos
+            refuerzos = min(datos.get("refuerzos", 1), 100)  # 3^100 ya es
+            # ~5e47 eventos: imposible de superar en la practica; capa el
+            # exponente para no desbordar el float.
+            gracia = self.UMBRAL_DECAY_RELACION * (self.FACTOR_CONSOLIDACION ** refuerzos)
             if self._n_eventos - datos["ultimo_evento"] > gracia and datos["fuerza"] > 0:
                 nueva = max(
                     0,

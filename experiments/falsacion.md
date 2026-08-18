@@ -212,3 +212,33 @@ acantilado de ~1 mes del diagnostico (>= ~900-2000 eventos) queda
 igual. La propuesta 2 es direccionalmente correcta pero
 cuantitativamente insuficiente en esta forma lineal; no se sigue
 tuneando para evitar sobreajuste.
+
+## Iteracion 2c (18/8/2026): repeticion espaciada (gracia multiplicativa)
+
+Responde al resultado plano de la iteracion 2b con la propuesta
+1160a7dd (Claude): la gracia de no-uso crece GEOMETRICAMENTE con cada
+refuerzo, no aditivamente -- `gracia = UMBRAL_DECAY_RELACION x
+FACTOR_CONSOLIDACION**refuerzos` (mecanismo de repeticion espaciada,
+curva de Ebbinghaus / Anki). Mismo campo `refuerzos` (ya existia), un
+cambio de una linea en decaer(); `FACTOR_CONSOLIDACION` se determina
+EMPIRICAMENTE (barrido sobre Enron), nunca a ciegas.
+
+Barrido Enron (cada valor una corrida completa contra los mismos
+umbrales pre-registrados):
+
+| F | B1 prec | B2 recall | B3 disc obs/ale | comp (A3) | A1 unif frac | C hit@5 |
+|---|---|---|---|---|---|---|
+| 2 | 67.0 | **0.305** | 27.9x | 0.219 | 0.175 | 0.0278 |
+| 3 | 67.8 | **0.338** | 25.3x | 0.253 | 0.228 | 0.0273 |
+| 4 | 67.1 | **0.346** | 22.0x | 0.278 | 0.258 | 0.0273 |
+
+CONCLUSION: la repeticion espaciada RESUELVE B2 -- el recall pasa de
+0.25 (lineal) a 0.30-0.35, cerrando la condicion (1) del entity. B1 y
+B3 siguen ok (precision 67-68, discriminacion 22-28x). Costo medido y
+monotono: la densificacion vuelve parcialmente (A1 unif 0.175-0.258,
+A3 comp 0.219-0.278, siempre < 0.50). Punto de equilibrio adoptado:
+**F=3** (margen comodo de recall, comp 0.253, B3 25x). **C sigue FALSA**
+en los tres valores (~0.027 vs frecuencia 0.030): el primado no escala
+con la retencion de relaciones -- la senal de recuperacion de temas
+dormidos sigue siendo un problema aparte. Blog a F=3: B2 ok (0.403),
+B1 FALSA (46.4, sin cambio por el optimize unico final), C FALSA.

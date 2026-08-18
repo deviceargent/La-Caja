@@ -32,6 +32,8 @@ VENTANA_GT = 4  # co-ocurrencia del ground truth = ventana del modelo
 OPTIMIZAR_CADA = 200
 TOP_FREC = 500
 MUESTRA_PARES = 400
+FACTOR_CONSOLIDACION = 3.0  # repeticion espaciada de las relaciones
+# (barrido empirico via --factor)
 
 # Filtro ontologico en ingles (el default del modelo es espanol).
 # Lista amplia: los hubs de uso frecuente (like, got, time...) deben
@@ -357,6 +359,7 @@ def test_c(docs, corte=0.60):
     n = len(docs)
     k = int(n * corte)
     la = LaCaja(filtro_ontologico=INGLES)
+    la.piscina.FACTOR_CONSOLIDACION = FACTOR_CONSOLIDACION
     ultima_fecha = {}
     for i, (fecha, texto) in enumerate(docs[:k]):
         la.procesar_consulta(texto)
@@ -447,6 +450,7 @@ def run(corpus):
     terminos_frec = [t for t, _ in docfrec.most_common(TOP_FREC)]
 
     la = LaCaja(filtro_ontologico=INGLES)
+    la.piscina.FACTOR_CONSOLIDACION = FACTOR_CONSOLIDACION
     n = len(docs)
     serie = {}
     for i, (fecha, texto) in enumerate(docs):
@@ -486,4 +490,11 @@ def run(corpus):
 
 
 if __name__ == "__main__":
+    factor = 3.0
+    if "--factor" in sys.argv:
+        i = sys.argv.index("--factor")
+        factor = float(sys.argv[i + 1])
+        del sys.argv[i:i + 2]
+    FACTOR_CONSOLIDACION = factor
+    print(f"[factor consolidacion: {factor}]", flush=True)
     run(sys.argv[1] if len(sys.argv) > 1 else "enron")

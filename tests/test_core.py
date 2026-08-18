@@ -705,7 +705,7 @@ def test_relacion_debil_se_olvida_y_poda_sus_aristas():
     la.procesar_consulta("alfa")
     la.procesar_consulta("beta")
     la.declarar_relacion("alfa", "beta")
-    for _ in range(6):
+    for _ in range(18):
         la.procesar_consulta("gamma")
 
     la.optimizar()
@@ -716,7 +716,8 @@ def test_relacion_debil_se_olvida_y_poda_sus_aristas():
 
 def test_relacion_reforzada_sobrevive_el_olvido():
     """El historial amortigua el olvido: una relacion reforzada 2 veces
-    (gracia x2) sobrevive la pasada; la incidental (refuerzos 1) muere."""
+    (gracia 3^2=45) sobrevive la pasada; la incidental (refuerzos 1,
+    gracia 15) muere."""
     la = LaCaja()
     la.piscina.UMBRAL_DECAY_RELACION = 5
     la.procesar_consulta("alfa")
@@ -726,20 +727,21 @@ def test_relacion_reforzada_sobrevive_el_olvido():
     la.declarar_relacion("alfa", "beta")
     la.declarar_relacion("alfa", "beta")  # refuerzos 2
     la.declarar_relacion("zeta", "eta")   # refuerzos 1
-    for _ in range(6):
+    for _ in range(20):
         la.procesar_consulta("gamma")
 
     la.optimizar()
 
     assert ("alfa", "beta") in la.piscina.relaciones, "la reforzada sobrevive"
-    assert la.piscina.relaciones[("alfa", "beta")]["fuerza"] == 2, "gracia x2: ni siquiera decae"
+    assert la.piscina.relaciones[("alfa", "beta")]["fuerza"] == 2, "gracia 3^2: ni siquiera decae"
     assert ("zeta", "eta") not in la.piscina.relaciones, "la incidental muere"
 
 
 def test_relacion_reforzada_aguanta_vacios_por_historial():
-    """Propiedad del olvido proporcional al refuerzo historico: una
-    relacion vista una sola vez y otra reforzada 4 veces, ambas con
-    vacio de no-uso -- la reforzada aguanta, la incidental se poda."""
+    """Propiedad del olvido de repeticion espaciada: una relacion vista
+    una sola vez y otra reforzada 4 veces, ambas con vacio de no-uso --
+    la reforzada (gracia 3^4=405) aguanta, la incidental (gracia 15) se
+    poda."""
     la = LaCaja()
     la.piscina.UMBRAL_DECAY_RELACION = 5
     la.procesar_consulta("alfa")
@@ -749,7 +751,7 @@ def test_relacion_reforzada_aguanta_vacios_por_historial():
     la.procesar_consulta("zeta")
     la.procesar_consulta("eta")
     la.declarar_relacion("zeta", "eta")       # refuerzos 1
-    for _ in range(6):
+    for _ in range(18):
         la.procesar_consulta("gamma")
 
     la.optimizar()
@@ -769,7 +771,7 @@ def test_olvido_de_relacion_replay_byte_identical(tmp_path):
     la1.procesar_consulta("alfa")
     la1.procesar_consulta("beta")
     la1.declarar_relacion("alfa", "beta")
-    for _ in range(6):
+    for _ in range(18):
         la1.procesar_consulta("gamma")
     la1.optimizar()
     estado = la1.piscina.a_dict()
