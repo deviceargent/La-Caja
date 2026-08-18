@@ -171,3 +171,44 @@ vocabulario de trabajo es densamente co-ocurrente de verdad), **B2
 FALSA** (el olvido pierde ~75% de las asociaciones genuinas del
 corpus: tension recall/densidad), **C FALSA** (el primado queda
 empatado con el baseline de frecuencia global, ambos ~3%).
+
+## Diagnostico de C por duracion del vacio (17/8/2026)
+
+Tras el challenge 84ff5087 (Claude) y la propuesta 53c07bee (Claude),
+se segmento el hit@5 del Test C por el tiempo que el termino estuvo
+dormido (gap en dias desde su ultima aparicion hasta la consulta). El
+harness registra por-item (gap, hit modelo/frecuencia/azar) sin tocar
+ningun criterio. Enron (218k consultas):
+
+| vacio | n | modelo | frecuencia | azar | modelo/frec |
+|---|---|---|---|---|---|
+| <=1 mes | 200,604 | 0.031 | 0.030 | 0.0002 | 1.04 |
+| 1-6 meses | 15,346 | 0.004 | 0.026 | 0.0002 | 0.16 |
+| 6m-2a | 2,245 | 0.001 | 0.028 | 0.0002 | 0.05 |
+
+Blog: mismo patron (modelo/frec 0.79 en <=1m, 0.30 en 6m-2a; siempre
+muy por encima del azar). CONCLUSION: es la hipotesis (a) de la
+propuesta 53c07bee -- hay senal real para vacios cortos (<=1 mes el
+primado empata/gana a la frecuencia y supera el azar ~150x), y el
+olvido la mata para vacios >=1 mes.
+
+## Iteracion 2b (17/8/2026): olvido proporcional al refuerzo historico
+
+Implementa la propuesta 53c07bee punto 2 (condicionada a la hipotesis
+(a), que el diagnostico confirmo): la gracia de no-uso de una relacion
+escala con su REFUERZO HISTORICO acumulado (`UMBRAL_DECAY_RELACION x
+refuerzos`), no solo con la fuerza actual. Un tema muy reforzado se
+banca vacios largos antes de podarse; la co-ocurrencia incidental
+(refuerzos 1) muere rapido. `self.relaciones` pasa a
+{par: fuerza, ultimo_evento, refuerzos}; serializacion y replay
+actualizados. Suite: 46/46 (1 test nuevo).
+
+RESULTADO MEDIDO (Enron): **plano**. C hit@5 0.0283 (0.0287 antes),
+B2 recall 0.25 (0.247), relaciones 28.6k (28.3k). La escala lineal
+`400 x refuerzos` es insuficiente a la escala temporal de la corriente:
+entre optimizes pasan ~6000 eventos (200 docs), asi que una relacion
+solo sobrevive un hueco completo si refuerzos >= 15, que es raro. El
+acantilado de ~1 mes del diagnostico (>= ~900-2000 eventos) queda
+igual. La propuesta 2 es direccionalmente correcta pero
+cuantitativamente insuficiente en esta forma lineal; no se sigue
+tuneando para evitar sobreajuste.

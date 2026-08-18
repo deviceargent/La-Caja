@@ -17,8 +17,8 @@
         },
         "A1_top": {
           "n": 400,
-          "frac_conect": 0.8025,
-          "media": 0.25390625,
+          "frac_conect": 0.8,
+          "media": 0.25578125,
           "p95": 0.5
         },
         "A3_comp_gigante": 0.22792990142387734
@@ -36,8 +36,8 @@
         },
         "A1_top": {
           "n": 400,
-          "frac_conect": 0.9675,
-          "media": 0.375625,
+          "frac_conect": 0.9625,
+          "media": 0.3621875,
           "p95": 1.0
         },
         "A3_comp_gigante": 0.25925453152923156
@@ -55,8 +55,8 @@
         },
         "A1_top": {
           "n": 400,
-          "frac_conect": 0.99,
-          "media": 0.41375,
+          "frac_conect": 0.9925,
+          "media": 0.40375,
           "p95": 1.0
         },
         "A3_comp_gigante": 0.26360004097940787
@@ -75,7 +75,7 @@
         "A1_top": {
           "n": 400,
           "frac_conect": 1.0,
-          "media": 0.2796875,
+          "media": 0.28015625,
           "p95": 0.5
         },
         "A3_comp_gigante": 0.4926743706149402
@@ -95,7 +95,7 @@
       "A1_top": {
         "n": 400,
         "frac_conect": 1.0,
-        "media": 0.2796875,
+        "media": 0.28015625,
         "p95": 0.5
       },
       "A3_comp_gigante": 0.4926743706149402
@@ -124,9 +124,35 @@
   "test_c": {
     "docs_futuros_con_tema": 82,
     "consultas": 3216,
-    "hit5_modelo": 0.04321002501325336,
+    "hit5_modelo": 0.0431542199902338,
     "hit5_frecuencia": 0.06467661691542288,
     "hit5_aleatorio": 0.0017410590079593596,
+    "hit5_por_vacio": {
+      "<=1m": {
+        "n": 1675,
+        "hit5_modelo": 0.0507633385647704,
+        "hit5_frecuencia": 0.06395115949411159,
+        "hit5_aleatorio": 0.0017993564362966778
+      },
+      "1-6m": {
+        "n": 580,
+        "hit5_modelo": 0.04192190773073245,
+        "hit5_frecuencia": 0.07197832778895227,
+        "hit5_aleatorio": 0.0018325716157768805
+      },
+      "6m-2a": {
+        "n": 26,
+        "hit5_modelo": 0.02577487166187553,
+        "hit5_frecuencia": 0.08582706032471918,
+        "hit5_aleatorio": 0.002876947613789719
+      },
+      ">2a": {
+        "n": 935,
+        "hit5_modelo": 0.030770616305420207,
+        "hit5_frecuencia": 0.06085868894259686,
+        "hit5_aleatorio": 0.0015482690520761942
+      }
+    },
     "veredicto": {
       "C1": "FALSA",
       "C2": "FALSA"

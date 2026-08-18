@@ -388,9 +388,10 @@ class Piscina:
         clave = tuple(sorted((a, b)))
         if clave in self.relaciones:
             self.relaciones[clave]["fuerza"] += 1
+            self.relaciones[clave]["refuerzos"] += 1
             self.relaciones[clave]["ultimo_evento"] = self._n_eventos
         else:
-            self.relaciones[clave] = {"fuerza": 1, "ultimo_evento": self._n_eventos}
+            self.relaciones[clave] = {"fuerza": 1, "ultimo_evento": self._n_eventos, "refuerzos": 1}
             self.relaciones_por_termino.setdefault(a, set()).add(b)
             self.relaciones_por_termino.setdefault(b, set()).add(a)
             self.aristas_por_relacion[clave] = set()
@@ -508,11 +509,12 @@ class Piscina:
         PISO_DECAY). La staleness se mide en conteo de eventos del log
         (determinista para el replay), no en reloj de pared. Pura
         lectura de estado: cada cambio se delega en fijar_peso, que el
-        event-sourcing registra. Tambien olvida RELACIONES: una
-        relacion no reforzada pierde fuerza (mitad hacia el piso 0) y,
-        en 0, se PODE la relacion y sus aristas exactas
-        (prune_relacion). Solo sobreviven las asociaciones reforzadas
-        de verdad."""
+        event-sourcing registra. Tambien olvida RELACIONES con gracia
+        PROPORCIONAL AL REFUERZO HISTORICO (UMBRAL_DECAY_RELACION x
+        refuerzos): la fuerza decae suave hacia el piso 0 y, en 0, se
+        PODE la relacion y sus aristas exactas (prune_relacion). Un tema
+        muy reforzado aguanta vacios largos; la co-ocurrencia incidental
+        de una sola vez muere rapido."""
         umbral = umbral if umbral is not None else self.UMBRAL_DECAY_EVENTOS
         decaidos = []
         for t, b in self.burbujas.items():
@@ -521,11 +523,17 @@ class Piscina:
                 self.fijar_peso(t, nuevo)
                 decaidos.append(t)
         # Las relaciones se olvidan con su propia escala: mas lentas que
-        # los terminos (FACTOR_DECAY_RELACION=4) y con mas gracia de
-        # no-uso (UMBRAL_DECAY_RELACION). Solo la co-ocurrencia
-        # incidental (fuerza 1, sin refuerzo reciente) muere.
+        # los terminos (FACTOR_DECAY_RELACION=4) y con una gracia de
+        # no-uso PROPORCIONAL AL REFUERZO HISTORICO acumulado
+        # (UMBRAL_DECAY_RELACION x refuerzos): un tema muy reforzado se
+        # banca vacios largos antes de podarse (el historial lo
+        # distingue de una coincidencia incidental), una relacion vista
+        # una sola vez muere rapido. La fuerza decae suave y en 0 se
+        # poda la relacion y sus aristas exactas.
         for clave, datos in list(self.relaciones.items()):
-            if self._n_eventos - datos["ultimo_evento"] > self.UMBRAL_DECAY_RELACION and datos["fuerza"] > 0:
+            refuerzos = datos.get("refuerzos", 1)
+            gracia = self.UMBRAL_DECAY_RELACION * refuerzos
+            if self._n_eventos - datos["ultimo_evento"] > gracia and datos["fuerza"] > 0:
                 nueva = max(
                     0,
                     datos["fuerza"] - max(1, datos["fuerza"] // self.FACTOR_DECAY_RELACION),
@@ -602,7 +610,7 @@ class Piscina:
             "burbujas": {t: {"peso": b.peso, "nodos": sorted(b.nodos), "ultimo_evento": b.ultimo_evento} for t, b in self.burbujas.items()},
             "nodos": {nid: {"burbujas": sorted(n.burbujas), "aristas": sorted(n.aristas)} for nid, n in self.nodos.items()},
             "relaciones": [
-                [a, b, d["fuerza"], d["ultimo_evento"]] for (a, b), d in sorted(self.relaciones.items())
+                [a, b, d["fuerza"], d["ultimo_evento"], d["refuerzos"]] for (a, b), d in sorted(self.relaciones.items())
             ],
             "aristas_por_relacion": [
                 [a, b, [[x, y] for x, y in sorted(es)]] for (a, b), es in sorted(self.aristas_por_relacion.items())
@@ -630,8 +638,14 @@ class Piscina:
                 max_seq = max(max_seq, int(nid[1:]))
         Nodo._seq = max_seq
         self.relaciones = {}
-        for a, b, fuerza, ultimo_evento in data.get("relaciones", []):
-            self.relaciones[tuple(sorted((a, b)))] = {"fuerza": fuerza, "ultimo_evento": ultimo_evento}
+        for fila in data.get("relaciones", []):
+            a, b, fuerza, ultimo_evento = fila[:4]
+            refuerzos = fila[4] if len(fila) > 4 else 1
+            self.relaciones[tuple(sorted((a, b)))] = {
+                "fuerza": fuerza,
+                "ultimo_evento": ultimo_evento,
+                "refuerzos": refuerzos,
+            }
         self.aristas_por_relacion = {}
         for a, b, es in data.get("aristas_por_relacion", []):
             self.aristas_por_relacion[tuple(sorted((a, b)))] = {tuple(sorted((x, y))) for x, y in es}

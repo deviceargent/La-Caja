@@ -715,8 +715,8 @@ def test_relacion_debil_se_olvida_y_poda_sus_aristas():
 
 
 def test_relacion_reforzada_sobrevive_el_olvido():
-    """La fuerza amortigua el olvido: una relacion reforzada (fuerza 2)
-    decae a 1 pero sobrevive la pasada; la incidental (fuerza 1) muere."""
+    """El historial amortigua el olvido: una relacion reforzada 2 veces
+    (gracia x2) sobrevive la pasada; la incidental (refuerzos 1) muere."""
     la = LaCaja()
     la.piscina.UMBRAL_DECAY_RELACION = 5
     la.procesar_consulta("alfa")
@@ -724,15 +724,37 @@ def test_relacion_reforzada_sobrevive_el_olvido():
     la.procesar_consulta("zeta")
     la.procesar_consulta("eta")
     la.declarar_relacion("alfa", "beta")
-    la.declarar_relacion("alfa", "beta")  # fuerza 2
-    la.declarar_relacion("zeta", "eta")   # fuerza 1
+    la.declarar_relacion("alfa", "beta")  # refuerzos 2
+    la.declarar_relacion("zeta", "eta")   # refuerzos 1
     for _ in range(6):
         la.procesar_consulta("gamma")
 
     la.optimizar()
 
     assert ("alfa", "beta") in la.piscina.relaciones, "la reforzada sobrevive"
-    assert la.piscina.relaciones[("alfa", "beta")]["fuerza"] == 1, "2 -> 1 (mitad suave)"
+    assert la.piscina.relaciones[("alfa", "beta")]["fuerza"] == 2, "gracia x2: ni siquiera decae"
+    assert ("zeta", "eta") not in la.piscina.relaciones, "la incidental muere"
+
+
+def test_relacion_reforzada_aguanta_vacios_por_historial():
+    """Propiedad del olvido proporcional al refuerzo historico: una
+    relacion vista una sola vez y otra reforzada 4 veces, ambas con
+    vacio de no-uso -- la reforzada aguanta, la incidental se poda."""
+    la = LaCaja()
+    la.piscina.UMBRAL_DECAY_RELACION = 5
+    la.procesar_consulta("alfa")
+    la.procesar_consulta("beta")
+    for _ in range(4):
+        la.declarar_relacion("alfa", "beta")  # refuerzos 4
+    la.procesar_consulta("zeta")
+    la.procesar_consulta("eta")
+    la.declarar_relacion("zeta", "eta")       # refuerzos 1
+    for _ in range(6):
+        la.procesar_consulta("gamma")
+
+    la.optimizar()
+
+    assert la.piscina.relaciones[("alfa", "beta")]["fuerza"] == 4, "el historial aguanta el vacio"
     assert ("zeta", "eta") not in la.piscina.relaciones, "la incidental muere"
 
 

@@ -17,6 +17,7 @@ import sys
 import time
 import xml.etree.ElementTree as ET
 from collections import Counter, defaultdict
+from datetime import date
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "src"))
@@ -319,14 +320,49 @@ def test_b(la, par_gt, total_pares, docs):
     return res
 
 
+def _parse_fecha(fecha):
+    return date.fromisoformat(fecha[:10])
+
+
+def _segmentar_vacio(items):
+    """Diagnostico por duracion del vazio: separa hit@5 segun cuanto
+    tiempo estuvo el termino dormido (gap en dias desde su ultima
+    aparicion hasta la consulta). No cambia los criterios: solo describe
+    en que rango de vazio el primado tiene senal y en cual no."""
+    buckets = {
+        "<=1m": (None, 30),
+        "1-6m": (30, 180),
+        "6m-2a": (180, 730),
+        ">2a": (730, None),
+    }
+    res = {}
+    for nombre, (lo, hi) in buckets.items():
+        sel = [it for it in items if it[0] is not None and (lo is None or it[0] > lo) and (hi is None or it[0] <= hi)]
+        if not sel:
+            res[nombre] = {"n": 0}
+            continue
+        n = len(sel)
+        res[nombre] = {
+            "n": n,
+            "hit5_modelo": sum(it[1] for it in sel) / n,
+            "hit5_frecuencia": sum(it[2] for it in sel) / n,
+            "hit5_aleatorio": sum(it[3] for it in sel) / n,
+        }
+    return res
+
+
 def test_c(docs, corte=0.60):
     """Recuperacion temporal: memoria = 60% pasado, recuperacion sobre
     40% futuro (score contra memoria previa)."""
     n = len(docs)
     k = int(n * corte)
     la = LaCaja(filtro_ontologico=INGLES)
+    ultima_fecha = {}
     for i, (fecha, texto) in enumerate(docs[:k]):
         la.procesar_consulta(texto)
+        for t in set(filtrar(tokenizar(texto))):
+            if t in la.piscina.burbujas:
+                ultima_fecha[t] = _parse_fecha(fecha)
         if (i + 1) % OPTIMIZAR_CADA == 0:
             la.optimizar()
     # frecuencia global de la memoria (baseline)
@@ -338,6 +374,7 @@ def test_c(docs, corte=0.60):
     modelo_hits, freq_hits, rand_hits = [], [], []
     con_cover = 0
     doc_scores = 0
+    items = []
     for j, (fecha, texto) in enumerate(docs[k:]):
         toks = list(dict.fromkeys(filtrar(tokenizar(texto))))
         conocidos = [t for t in toks if t in la.piscina.burbujas]
@@ -347,15 +384,24 @@ def test_c(docs, corte=0.60):
         for t in conocidos:
             respuesta = set(conocidos) - {t}
             prim = set(la.contexto_primado(t, presupuesto=10))
-            modelo_hits.append(len(prim & respuesta) / len(respuesta))
-            freq_hits.append(len(set(top_frec) & respuesta) / len(respuesta))
+            m = len(prim & respuesta) / len(respuesta)
+            f = len(set(top_frec) & respuesta) / len(respuesta)
             # baseline honesto: 5 terminos al azar del VOCABULARIO de la
             # memoria (muestrear de `conocidos` seria trampa: el azar
             # sabria la respuesta)
             r5 = {rng.choice(list(la.piscina.burbujas)) for _ in range(5)}
-            rand_hits.append(len(r5 & respuesta) / len(respuesta))
+            r = len(r5 & respuesta) / len(respuesta)
+            modelo_hits.append(m)
+            freq_hits.append(f)
+            rand_hits.append(r)
+            last = ultima_fecha.get(t)
+            gap = (_parse_fecha(fecha) - last).days if last else None
+            items.append((gap, m, f, r))
             doc_scores += 1
         la.procesar_consulta(texto)
+        for t in set(filtrar(tokenizar(texto))):
+            if t in la.piscina.burbujas:
+                ultima_fecha[t] = _parse_fecha(fecha)
         if (j + 1) % OPTIMIZAR_CADA == 0:
             la.optimizar()
     if not modelo_hits:
@@ -366,6 +412,7 @@ def test_c(docs, corte=0.60):
         "hit5_modelo": sum(modelo_hits) / len(modelo_hits),
         "hit5_frecuencia": sum(freq_hits) / len(freq_hits),
         "hit5_aleatorio": sum(rand_hits) / len(rand_hits),
+        "hit5_por_vacio": _segmentar_vacio(items),
     }
     res["veredicto"] = {
         "C1": "FALSA" if res["hit5_modelo"] <= max(res["hit5_frecuencia"], res["hit5_aleatorio"]) else "ok",
