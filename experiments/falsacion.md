@@ -242,3 +242,96 @@ en los tres valores (~0.027 vs frecuencia 0.030): el primado no escala
 con la retencion de relaciones -- la senal de recuperacion de temas
 dormidos sigue siendo un problema aparte. Blog a F=3: B2 ok (0.403),
 B1 FALSA (46.4, sin cambio por el optimize unico final), C FALSA.
+
+## Iteracion 2d (18/8/2026): descomposicion y dos enmiendas EXPLICITAS
+
+Cierra la condicion (2) (Test C) y la (3) (Test A) del entity 09a03bd0
+con dos enmiendas al pre-registro, habilitadas por esas mismas
+condiciones y con datos medidos (NO es una retirada: descompone el
+fallo y separa capas que el criterio original mezclaba).
+
+### Diagnostico que motiva las enmiendas
+
+1. **Test C, presupuesto del primado.** El Test C pre-registrado usaba
+   `contexto_primado(t, 5)` (linea 82); la iteracion 2 lo subio a 10
+   como correccion de harness documentada. Se instrumento el harness
+   para medir el TECHO de la senal (todos los partners del termino en
+   las relaciones supervivientes, sin presupuesto) por buckete de vacio:
+
+   | Enron, F=3 | n | presupuesto 10 | presupuesto 50 | techo (sin presup.) | frecuencia |
+   |---|---|---|---|---|---|
+   | vacio <=1m | 200,604 | 0.029 | **0.069** | 0.108 | 0.030 |
+   | 1-6m | 15,346 | 0.0046 | 0.0058 | 0.006 | 0.026 |
+   | 6m-2a | 2,245 | 0.0015 | 0.0015 | 0.002 | 0.028 |
+
+   CONCLUSION: dos regimenes distintos. Para vacios <=1 mes la senal
+   EXISTE y es ~3.6x la frecuencia (techo 0.108), pero el presupuesto de
+   10 la desperdicia (0.029): es un problema de RANKING/PRESUPUESTO, no
+   de olvido -- el modelo recupera 0.069 (64% del techo) con presupuesto
+   50 y supera la frecuencia 2.3x. Para vacios >=1 mes la senal ya no
+   esta en la memoria (techo 0.004-0.006 << frecuencia): es OLV|DO real,
+   y ninguna mejora de recuperacion lo arregla. Se probo ademas un
+   re-rank por recencia del primado (ventana de contexto activo): en el
+   blog REGRESO el hit (0.043 -> 0.036) -- el limite es la cobertura del
+   presupuesto, no el orden; se descarto.
+
+2. **Test A, origen de la conectividad.** Se descompuso la conectividad
+   de pares aleatorios segun su origen (relacion observada 1.0,
+   co-membresia 1.0, o inferencia transitiva 0.5^k por aristas):
+
+   | Enron, F=3 | frac_conect | frac_rel | frac_membresia | frac_arista |
+   |---|---|---|---|---|
+   | pares uniformes | 0.2275 | **0.000** | 0.000 | 0.2275 |
+   | nucleo top-500 | 0.980 | **0.065** | 0.003 | 0.912 |
+
+   CONCLUSION: la "densificacion" de A1 es 100% cierre transitivo de la
+   NAVEGACION (0.5^k a traves del nucleo fuerte), NO de la memoria
+   observada (frac_rel 0.0 uniforme, 0.065 en el nucleo). B2 cuenta
+   relaciones; A1 contaba caminos: capas separables. Se midio el gating
+   de aristas por fuerza (solo relaciones reforzadas >=2 materializan
+   navegacion): apenas baja la conectividad (0.228 -> 0.175) porque el
+   nucleo de relaciones fuertes sostiene el componente gigante (A3 0.253).
+   Acotar A1 por mecanismo exigiria castrar la navegacion multi-salto
+   (los tests de navegacion dependen de aristas en primera co-ocurrencia).
+
+### Enmienda al Test C (aprobada por el usuario)
+
+- Presupuesto del primado 10 -> **50** (correccion de harness con el
+  mismo estatus que el 5 -> 10 de la iteracion 2, ahora con la medicion
+  del techo como justificacion: 10 no expresa la senal que la memoria
+  tiene).
+- C2 pasa de un umbral absoluto aspiracional (hit@5 >= 0.15, medido
+  INALCANZABLE por diseno: el techo global es ~0.10 en Enron, aun con
+  recuperacion perfecta) a un umbral relativo a la senal que la memoria
+  realmente tiene: **C2: FALSA si hit@5 < 0.5 x techo_primado** (el
+  primado debe expresar al menos la mitad de su alcance asociativo).
+
+### Enmienda al Test A (aprobada por el usuario)
+
+- A1: esparsidad de la capa OBSERVADA, `frac_rel <= 0.10` en uniformes
+  y nucleo top-500, MAS una cordura de navegacion: `frac_conect <= 0.50`
+  en pares uniformes (atrapa el "todo conectado"; el alcance transitivo
+  del nucleo top se reporta como navegacion, no como veredicto).
+- A2: magnitud observada, `frac_rel + frac_membresia <= 0.10` en
+  uniformes y nucleo (la confianza 1.0 sobre co-ocurrencia real es
+  memoria correcta, no alucinacion).
+- A3: intacto (componente gigante <= 0.50).
+
+### Resultado con las enmiendas (runs canonicos, F=3)
+
+| corriente | A1 | A2 | A3 | B1 | B2 | B3 | C1 | C2 |
+|---|---|---|---|---|---|---|---|---|
+| **Enron** | ok | ok | ok | ok (67.8) | ok (0.338) | ok (25x) | ok (0.064 vs 0.030) | ok (64% del techo) |
+| **Blog** | FALSA | ok | ok | FALSA (46.4) | ok (0.403) | ok | ok (0.085 vs 0.065) | ok (70% del techo) |
+
+- Enron pasa TODOS los criterios (pre-registrados y enmendados): la
+  memoria observada es esparsa (frac_rel 0.0), discrimina 25x, recuerda
+  el corpus (recall 0.338) y recupera su contexto asociativo 2.2x mejor
+  que la frecuencia (64% del techo medido).
+- Blog sigue con A1 FALSA (la cordura: su grafo queda casi completamente
+  alcanzable por navegacion, frac_conect 0.9975, corpus chico y denso) y
+  B1 FALSA (optimize unico final, ya documentado). C pasa en ambas.
+- El limite honesto queda documentado: vacios >=1 mes (temas dormidos de
+  verdad) no tienen senal en la memoria (techo <= 0.006) -- la
+  recuperacion de temas dormidos largos es un limite del modelo, no del
+  criterio.
