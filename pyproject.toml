@@ -27,7 +27,7 @@ classifiers = [
 [project.urls]
 Homepage = "https://github.com/deviceargent/La-Caja"
 Repository = "https://github.com/deviceargent/La-Caja"
-Documentation = "https://github.com/deviceargent/la-caja-mcp"
+Documentation = "https://github.com/deviceargent/La-Caja/blob/main/experiments/writeup.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]

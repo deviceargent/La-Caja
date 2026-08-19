@@ -2,12 +2,15 @@
 
 Memoria contextual asociativa para modelos de lenguaje: lo que el modelo
 **observó** en su vida, con olvido, discriminación entre recuerdo e
-inferencia, y primado de contexto.
+inferencia, y primado de contexto. Arquitectura **falsable**: cada
+mecanismo tiene un criterio pre-registrado y un experimento que puede
+refutarlo.
 
-Este repositorio contiene la **implementación** (no solo la spec) y su
-**falsación empírica**. El estado del arte de la arquitectura está en
-`docs/` (spec v2.0 + addendum); la especificación y los resultados
-criteriales están en `experiments/falsacion.md`.
+Este repositorio contiene la **implementación**, su **falsación
+empírica** y la **validación de la tesis**: *La Caja como soporte de
+memoria mejora al modelo que la usa* (win_rate 0.60, p=9e-43). El acceso
+de agentes y el protocolo de debate agente-agente-humano viven en el repo
+hermano [la-caja-mcp](https://github.com/deviceargent/la-caja-mcp).
 
 ## Qué hace
 
@@ -19,42 +22,42 @@ criteriales están en `experiments/falsacion.md`.
 - **Olvido**: decaimiento por consolidación; las asociaciones que no se
   repiten mueren. El primado de contexto resucita temas dormidos
   (recuperación temporal).
+- **Traza dormida (v0.7)**: lo olvidado no se borra — queda como traza
+  inerte, clave de rehidratación por re-observación (rol honesto: NO
+  predice el futuro).
 - **Persistencia event-sourced** (opt-in): `PiscinaPersistente` registra
   cada mutación; un snapshot replayable reconstruye el estado exacto.
 
-## Estado del proyecto
+## Evidencia (resumen honesto)
 
-La falsación (pre-registrada en `falsacion.md`) corre dos corrientes
-orgánicas de registro opuesto — **Enron** (corriente laboral, ~3.8 años)
-y **Blog** (cocina diaria). Resultados canónicos (F=3) en
-`experiments/results/`:
+Todos los veredictos en `experiments/falsacion.md`; los números en
+`experiments/results/`.
 
-| Test | Enron | Blog |
-|------|-------|------|
-| A. discriminación (no densificación) | ok (todo) | **A1 FALSA**, A2/A3 ok |
-| B. fidelidad al corpus | ok (todo) | **B1 FALSA**, B2/B3 ok |
-| C. recuperación temporal (primado) | ok (C1 2.2×, C2 64% techo) | ok (C1, C2 70% techo) |
+| Criterio | Resultado |
+|---|---|
+| C1/C2 — recuperación temporal (primado) | **ok** (Enron 2.2×, Blog ok) |
+| A/B — discriminación y fidelidad | **ok** en Enron; A1/B1 **FALSA** en Blog (causa documentada) |
+| Rehidratación (Enron, 1-6m) | **+41%** |
+| La traza dormida predice el futuro | **FALSA** (techo 0.03) — inercia, no predicción |
+| Modelo re-ordenando la memoria (cloze) | **FALSA** — la frecuencia gana; el modelo resta |
+| **La Caja como soporte de memoria (pareado)** | **OK** — recall ~19x, p=9e-43 |
 
-- **Enron pasa todo**; en Blog se refutan A1 y B1 (con la causa
-  documentada: el cierre transitivo del núcleo sostenido de 500 términos
-  conecta pares ajenos y el `optimize` colapsa la multi-pertenencia a
-  un gigante único).
-- Límite honesto reportado: el primado no recupera temas dormidos ≥ 1
-  mes (Enron: techo ≤ 0.006 sin señal).
+La tesis quedó validada sobre 400 consultas (gpt-4o-mini, Enron): el
+mismo modelo con La Caja recupera el vocabulario real del corpus ~19x
+mejor que sin ella. Los límites son parte del diseño: la memoria no
+compite con la frecuencia en cloze co-ocurrencial, y no es una memoria de
+largo plazo (el primado no resucita temas dormidos ≥ 1 mes).
 
-La falsación es una **afirmación mecánica** (qué hace la memoria), no de
-utilidad aguas abajo. El acceso de agentes a La Caja y el protocolo de
-debate agente-agente-humano viven en el repo hermano
-[la-caja-mcp](https://github.com/deviceargent/la-caja-mcp). El esqueleto
-del artículo (con los números de todos los experimentos) está en
-`experiments/writeup.md`.
+El protocolo de acceso (repo B) quedó probado de punta a punta con LLM
+reales: debate, solicitud de interferencia con deadline, escalada humana,
+e **interrupción al medio del razonamiento** (el agente cede dentro de la
+ronda).
 
 ## Uso
 
 ### Instalación
 
-La Caja es un paquete de Python estándar (`la-caja`). Se puede instalar
-de tres formas, según de dónde venga el código:
+Paquete de Python estándar (`la-caja`):
 
 ```
 # 1. Publicado (PyPI): una vez publicado, un solo comando
@@ -67,17 +70,10 @@ pip install git+https://github.com/deviceargent/La-Caja.git
 pip install .
 ```
 
-Cómo funciona: `pyproject.toml` declara el paquete (nombre, versión,
-dependencias, autor). `pip install <origen>` construye un wheel (el
-archivo comprimido que Python instala) e instala el módulo `la_caja` en
-tu entorno (venv, conda, o el Python del sistema). Con `pip install la-caja`
-el origen es PyPI (el índice público de paquetes de Python); con `.` o
-`git+...` el origen es código local o un repo. El nombre de importación
-(`la_caja`, con guion bajo) no coincide con el de instalación (`la-caja`,
-con guion): esa es la convención de Python. Publicar a PyPI se hace
-tagueando el repo (`v0.7.0`) — el workflow `.github/workflows/pypi.yml`
-construye el wheel y lo sube automáticamente (trusted publishing, sin
-tokens). El README de este repo se convierte en la página del paquete.
+Publicar a PyPI se hace tagueando el repo (`v0.7.0`) — el workflow
+`.github/workflows/pypi.yml` construye el wheel y lo sube automáticamente
+(trusted publishing, sin tokens). El README se convierte en la página del
+paquete.
 
 ### Código
 
@@ -96,7 +92,7 @@ caja.stats()                          # terminos / nodos / aristas
 ```
 src/la_caja/        implementación (core.py)
 tests/              suite de determinismo y propiedades (53 tests)
-experiments/        falsación, evals y el esqueleto del writeup (writeup.md)
+experiments/        falsación, evals y el writeup final (writeup.md)
 docs/               spec v2.0, addendum v2.1, acceso MCP
 ```
 
@@ -105,6 +101,7 @@ docs/               spec v2.0, addendum v2.1, acceso MCP
 ```
 $env:PYTHONPATH="src"; python -m pytest tests -q        # 53/53
 python experiments/exp_memoria.py enron|blog            # ver falsacion.md
+python experiments/eval_pareado_memoria.py              # la tesis (requiere OPENAI_API_KEY)
 ```
 
 Los experimentos necesitan los corpus (parquet de Enron y Blog
