@@ -530,3 +530,56 @@ fallidas; resume completo 400/400):
   (memoria_alone_viva 0.045) sigue ganando a la traza en dormidos, y la
   frecuencia gana a todo. En co-ocurrencia como ground truth, el modelo
   no amplifica (consistente con el eval anterior).
+
+## Caso de uso real (pre-registro, 19/8/2026)
+
+Pregunta: cuando la memoria y el protocolo se usan en conjunto (escenario
+de prueba, NO desarrollo conjunto), el flujo real funciona — dos agentes
+compartiendo memoria via `la-caja-mcp` por streamable HTTP en localhost,
+con La Caja persistida en SQLite (`--caja-db`). Es la primera vez que se
+ejercita la pila completa fuera del unit test. Harness:
+`la-caja-mcp/experiments/uso_real.py`.
+
+Pre-registro (se fija aqui, NO a la vista de resultados):
+
+1. **Setup:** server `la-caja-mcp --transport streamable-http --host
+   127.0.0.1 --port 8765 --caja-db <tmp>`; dos clientes MCP separados
+   (`claude` y `asesor`) conectados por streamable HTTP al mismo server,
+   compartiendo la memoria. Ambos lados usan las tools de memoria
+   (`procesar_consulta`, `consultar`, `contexto_primado`, `historial`,
+   `stats`) y las de debate (`crear_sesion`, `mover`, `estado`).
+2. **Escenario:** claude ingiere una serie de consultas (memoria crece);
+   asesor consulta `contexto_primado` de un termino clave; luego ambos
+   debaten un claim que depende de esa asociacion, y se cierra en
+   consensus por el protocolo (interferir -> responder -> condiciones ->
+   aceptar).
+3. **Metricas (se reportan todas, sin cherry-pick):**
+   - `ok_memoria`: la ingesta de claude es visible para asesor
+     (`stats()` crece y `contexto_primado` contiene el termino).
+   - `ok_debate`: la sesion llega a consensus por el protocolo.
+   - `ok_replay`: `reproducir_sesion` del log da el mismo estado final.
+   - `ok_push`: un suscriptor SSE en `/caja/push` recibe al menos un
+     evento de estado durante el debate.
+   - `tiempos`: ingesta y debate (parlamento de latencia, no criterio).
+4. **Veredicto FALSA** (falla de integracion) si cualquiera de
+   `ok_memoria`, `ok_debate`, `ok_replay`, `ok_push` es False en la
+   corrida canónica. Esta es una prueba de integracion, NO una medicion
+   de la calidad de la memoria (eso ya esta cerrado arriba).
+5. **Coste:** sin API externa; corrida local en < 60s.
+
+Resultado del caso de uso real (19/8/2026, harness `la-caja-mcp/experiments/uso_real.py`):
+
+- `ok_memoria` True: 19 terminos compartidos visibles para ambos agentes
+  (`stats` identico de ambos lados); `contexto_primado("postgres")` =
+  ["escritura", "central", "servidor", "ventana", "cierra", "semana"].
+- `ok_debate` True: sesion cerró en consensus por el protocolo
+  (proponer -> interferir -> responder -> condiciones -> aceptar).
+- `ok_replay` True: `reproducir_sesion` del log dio el mismo estado final
+  (n_eventos coincidente).
+- `ok_push` True: un suscriptor SSE en `/caja/push` recibio 12 eventos de
+  estado durante el debate.
+- Tiempos (referencia, no criterio): ingesta 0.82s, debate 0.10s.
+- Veredicto: **OK** — la pila completa (dos agentes MCP + memoria
+  compartida en SQLite + debate + push SSE) funciona integrada fuera del
+  unit test. Esta es una prueba de integracion; NO modifica las
+  mediciones de calidad de memoria cerradas arriba.
