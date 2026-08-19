@@ -384,7 +384,22 @@ vista de resultados):
    `refuerzo_historico` es un evento del log; snapshot + replay
    reconstruyen poda y rehidratacion byte a byte.
 
-La validacion de la rehidratacion sobre el corpus Enron (si mejora C
-para vacios >= 1 mes) queda como trabajo pendiente: requiere una corrida
-completa con `rehidratar=True` contra los mismos criterios
-pre-registrados.
+Validacion sobre el corpus Enron (18/8/2026, `--rehidratar`), criterio
+pre-registrado "si la rehidratacion mejora C para vacios >= 1 mes":
+
+- **C mejora en absoluto:** `hit5_modelo` global 0.0638 -> 0.0702
+  (+10%). Por vacio, el rango 1-6m -- el unico con senal de memoria
+  medible -- sube 0.0058 -> 0.0082 (+41% relativo); <=1m 0.0690 ->
+  0.0758.
+- **Es senal, no alucinacion:** el techo del primado sube en proporcion
+  (0.0998 -> 0.1263 global; 1-6m 0.0059 -> 0.0084): los partners
+  restaurados SON relaciones observadas con fuerza reforzada, y por eso
+  cuentan en el techo. La expresion (C2 = hit5/techo) se mantiene
+  >= 0.5 (0.64 -> 0.56).
+- **Sin regresion:** B1/B2/B3 ok, A1/A2 FALSA igual que el canonico
+  (esperado, criterio enmendado de navegacion); tiempo de ingesta
+  1289s -> 1657s (coste de los eventos `refuerzo_historico`).
+- **Limite honesto:** en 1-6m la frecuencia del corpus sigue ganando
+  (modelo 0.0082 vs frecuencia 0.0255): la rehidratacion recupera senal
+  pero no cierra el deficit de los temas dormidos. Ese limite sigue en
+  pie; la traza dormida es la consulta honesta a esa capa.

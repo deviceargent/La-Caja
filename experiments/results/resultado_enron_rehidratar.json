@@ -1,0 +1,301 @@
+{
+  "corpus": "enron",
+  "nombre": "enron (jeff.dasovich, trabajo)",
+  "documentos": 5042,
+  "test_a": {
+    "serie": {
+      "0.25": {
+        "terminos": 12014,
+        "nodos": 38038,
+        "aristas": 384583,
+        "relaciones": 33354,
+        "A1_uniforme": {
+          "n": 400,
+          "frac_conect": 0.4525,
+          "frac_rel": 0.0,
+          "frac_membresia": 0.0,
+          "frac_arista": 0.4525,
+          "media": 0.06546630859375,
+          "p95": 0.25
+        },
+        "A1_top": {
+          "n": 400,
+          "frac_conect": 0.9975,
+          "frac_rel": 0.0525,
+          "frac_membresia": 0.005,
+          "frac_arista": 0.94,
+          "media": 0.3828125,
+          "p95": 1.0
+        },
+        "A1_uniforme_gated2": {
+          "n": 400,
+          "frac_conect": 0.22,
+          "frac_rel": 0.0,
+          "frac_membresia": 0.0,
+          "frac_arista": 0.22,
+          "media": 0.031875
+        },
+        "A1_top_gated2": {
+          "n": 400,
+          "frac_conect": 0.9875,
+          "frac_rel": 0.0525,
+          "frac_membresia": 0.005,
+          "frac_arista": 0.93,
+          "media": 0.35375
+        },
+        "A3_comp_gigante": 0.406645985593354
+      },
+      "0.5": {
+        "terminos": 19291,
+        "nodos": 63418,
+        "aristas": 1119724,
+        "relaciones": 81256,
+        "A1_uniforme": {
+          "n": 400,
+          "frac_conect": 0.5775,
+          "frac_rel": 0.0,
+          "frac_membresia": 0.0,
+          "frac_arista": 0.5775,
+          "media": 0.095068359375,
+          "p95": 0.25
+        },
+        "A1_top": {
+          "n": 400,
+          "frac_conect": 0.9925,
+          "frac_rel": 0.12,
+          "frac_membresia": 0.0075,
+          "frac_arista": 0.865,
+          "media": 0.4565625,
+          "p95": 1.0
+        },
+        "A1_uniforme_gated2": {
+          "n": 400,
+          "frac_conect": 0.36,
+          "frac_rel": 0.0,
+          "frac_membresia": 0.0,
+          "frac_arista": 0.36,
+          "media": 0.05734375
+        },
+        "A1_top_gated2": {
+          "n": 400,
+          "frac_conect": 0.9925,
+          "frac_rel": 0.12,
+          "frac_membresia": 0.0075,
+          "frac_arista": 0.865,
+          "media": 0.4375
+        },
+        "A3_comp_gigante": 0.4417200163991296
+      },
+      "0.75": {
+        "terminos": 23441,
+        "nodos": 74256,
+        "aristas": 1537502,
+        "relaciones": 105774,
+        "A1_uniforme": {
+          "n": 400,
+          "frac_conect": 0.53,
+          "frac_rel": 0.0,
+          "frac_membresia": 0.0,
+          "frac_arista": 0.53,
+          "media": 0.0939111328125,
+          "p95": 0.25
+        },
+        "A1_top": {
+          "n": 400,
+          "frac_conect": 0.9925,
+          "frac_rel": 0.14,
+          "frac_membresia": 0.0025,
+          "frac_arista": 0.85,
+          "media": 0.4878125,
+          "p95": 1.0
+        },
+        "A1_uniforme_gated2": {
+          "n": 400,
+          "frac_conect": 0.4125,
+          "frac_rel": 0.0,
+          "frac_membresia": 0.0,
+          "frac_arista": 0.4125,
+          "media": 0.07265625
+        },
+        "A1_top_gated2": {
+          "n": 400,
+          "frac_conect": 0.9925,
+          "frac_rel": 0.14,
+          "frac_membresia": 0.0025,
+          "frac_arista": 0.85,
+          "media": 0.468125
+        },
+        "A3_comp_gigante": 0.41608758888170655
+      },
+      "1.0": {
+        "terminos": 26283,
+        "nodos": 78404,
+        "aristas": 916923,
+        "relaciones": 67329,
+        "A1_uniforme": {
+          "n": 400,
+          "frac_conect": 0.335,
+          "frac_rel": 0.0,
+          "frac_membresia": 0.0,
+          "frac_arista": 0.335,
+          "media": 0.053388671875,
+          "p95": 0.25
+        },
+        "A1_top": {
+          "n": 400,
+          "frac_conect": 0.985,
+          "frac_rel": 0.135,
+          "frac_membresia": 0.0025,
+          "frac_arista": 0.8475,
+          "media": 0.4653125,
+          "p95": 1.0
+        },
+        "A1_uniforme_gated2": {
+          "n": 400,
+          "frac_conect": 0.27,
+          "frac_rel": 0.0,
+          "frac_membresia": 0.0,
+          "frac_arista": 0.27,
+          "media": 0.041328125
+        },
+        "A1_top_gated2": {
+          "n": 400,
+          "frac_conect": 0.985,
+          "frac_rel": 0.135,
+          "frac_membresia": 0.0025,
+          "frac_arista": 0.8475,
+          "media": 0.449375
+        },
+        "A3_comp_gigante": 0.3208127136370593
+      }
+    },
+    "final": {
+      "terminos": 26283,
+      "nodos": 78404,
+      "aristas": 916923,
+      "relaciones": 67329,
+      "A1_uniforme": {
+        "n": 400,
+        "frac_conect": 0.335,
+        "frac_rel": 0.0,
+        "frac_membresia": 0.0,
+        "frac_arista": 0.335,
+        "media": 0.053388671875,
+        "p95": 0.25
+      },
+      "A1_top": {
+        "n": 400,
+        "frac_conect": 0.985,
+        "frac_rel": 0.135,
+        "frac_membresia": 0.0025,
+        "frac_arista": 0.8475,
+        "media": 0.4653125,
+        "p95": 1.0
+      },
+      "A1_uniforme_gated2": {
+        "n": 400,
+        "frac_conect": 0.27,
+        "frac_rel": 0.0,
+        "frac_membresia": 0.0,
+        "frac_arista": 0.27,
+        "media": 0.041328125
+      },
+      "A1_top_gated2": {
+        "n": 400,
+        "frac_conect": 0.985,
+        "frac_rel": 0.135,
+        "frac_membresia": 0.0025,
+        "frac_arista": 0.8475,
+        "media": 0.449375
+      },
+      "A3_comp_gigante": 0.3208127136370593
+    },
+    "veredicto": {
+      "A1": "FALSA",
+      "A2": "FALSA",
+      "A3": "ok"
+    }
+  },
+  "test_b": {
+    "precision_pct": 71.43813645193488,
+    "recall": 0.41726447741686346,
+    "n_gt": 1011639,
+    "discriminacion": {
+      "obs": 19.145687593756033,
+      "inf": 0.0,
+      "ale": 0.0033333333333333335
+    },
+    "veredicto": {
+      "B1": "ok",
+      "B2": "ok",
+      "B3": "ok"
+    }
+  },
+  "test_c": {
+    "docs_futuros_con_tema": 2017,
+    "consultas": 218196,
+    "presupuesto_primado": 50,
+    "hit5_modelo": 0.07024938366114969,
+    "hit5_frecuencia": 0.029528497314341234,
+    "hit5_aleatorio": 0.0002104015417632075,
+    "techo_primado": 0.12632280225711376,
+    "hit5_por_vacio": {
+      "<=1m": {
+        "n": 200604,
+        "hit5_modelo": 0.07576115944837655,
+        "hit5_frecuencia": 0.029859363502931075,
+        "hit5_aleatorio": 0.00020948520251388354,
+        "techo_relaciones": 0.12979802810512456,
+        "techo_co_membresia": 0.006939383532438296,
+        "techo_primado": 0.13673741163756284
+      },
+      "1-6m": {
+        "n": 15346,
+        "hit5_modelo": 0.008235067486123253,
+        "hit5_frecuencia": 0.02545923680544842,
+        "hit5_aleatorio": 0.00021958694358780272,
+        "techo_relaciones": 0.006573982590526456,
+        "techo_co_membresia": 0.0018492858932129107,
+        "techo_primado": 0.008423268483739366
+      },
+      "6m-2a": {
+        "n": 2245,
+        "hit5_modelo": 0.0016781922957866122,
+        "hit5_frecuencia": 0.027786183085429142,
+        "hit5_aleatorio": 0.0002295875301431195,
+        "techo_relaciones": 0.00036545253724574225,
+        "techo_co_membresia": 0.0013249523625641826,
+        "techo_primado": 0.0016904048998099249
+      },
+      ">2a": {
+        "n": 1,
+        "hit5_modelo": 0.0,
+        "hit5_frecuencia": 0.014814814814814815,
+        "hit5_aleatorio": 0.0,
+        "techo_relaciones": 0.0,
+        "techo_co_membresia": 0.0,
+        "techo_primado": 0.0
+      }
+    },
+    "veredicto": {
+      "C1": "ok",
+      "C2": "ok"
+    }
+  },
+  "falsacion": {
+    "A": {
+      "A1": "FALSA",
+      "A2": "FALSA",
+      "A3": "ok"
+    },
+    "B": {
+      "B1": "ok",
+      "B2": "ok",
+      "B3": "ok"
+    },
+    "C": {
+      "C1": "ok",
+      "C2": "ok"
+    }
+  }
+}

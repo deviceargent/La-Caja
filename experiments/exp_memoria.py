@@ -8,6 +8,7 @@ del Blog Authorship Corpus. Criterios pre-registrados en falsacion.md.
 Uso:
   python experiments/exp_memoria.py enron
   python experiments/exp_memoria.py blog
+  python experiments/exp_memoria.py enron --rehidratar   (valida la capa de traza)
 """
 import json
 import os
@@ -39,6 +40,10 @@ PRESUPUESTO_PRIMADO = 50  # presupuesto del primado en Test C. Medido:
 # presupuesto 10 no expresa la senal de la memoria (Enron 0.029 vs
 # frecuencia 0.030, techo sin presupuesto 0.108); con 50 el modelo
 # supera la frecuencia en ambas corrientes (Enron 2.2x, Blog 1.3x).
+
+REHIDRATAR = False  # opt-in via --rehidratar: re-observaciones de
+# parejas olvidadas vuelven con fuerza historica amortizada (ver
+# falsacion.md, post-falsacion)
 
 # Filtro ontologico en ingles (el default del modelo es espanol).
 # Lista amplia: los hubs de uso frecuente (like, got, time...) deben
@@ -491,7 +496,7 @@ def test_c(docs, corte=0.60):
     40% futuro (score contra memoria previa)."""
     n = len(docs)
     k = int(n * corte)
-    la = LaCaja(filtro_ontologico=INGLES)
+    la = LaCaja(filtro_ontologico=INGLES, rehidratar=REHIDRATAR)
     la.piscina.FACTOR_CONSOLIDACION = FACTOR_CONSOLIDACION
     ultima_fecha = {}
     for i, (fecha, texto) in enumerate(docs[:k]):
@@ -605,7 +610,7 @@ def run(corpus):
             docfrec[t] += 1
     terminos_frec = [t for t, _ in docfrec.most_common(TOP_FREC)]
 
-    la = LaCaja(filtro_ontologico=INGLES)
+    la = LaCaja(filtro_ontologico=INGLES, rehidratar=REHIDRATAR)
     la.piscina.FACTOR_CONSOLIDACION = FACTOR_CONSOLIDACION
     n = len(docs)
     serie = {}
@@ -638,7 +643,7 @@ def run(corpus):
             "C": c.get("veredicto", {}),
         },
     }
-    salida = os.path.join(RESULTADOS, f"resultado_{corpus}.json")
+    salida = os.path.join(RESULTADOS, f"resultado_{corpus}{'_rehidratar' if REHIDRATAR else ''}.json")
     with open(salida, "w", encoding="utf-8") as fh:
         json.dump(resultado, fh, ensure_ascii=False, indent=2)
     print(json.dumps(resultado["falsacion"], indent=2))
@@ -652,5 +657,9 @@ if __name__ == "__main__":
         factor = float(sys.argv[i + 1])
         del sys.argv[i:i + 2]
     FACTOR_CONSOLIDACION = factor
+    if "--rehidratar" in sys.argv:
+        REHIDRATAR = True
+        sys.argv.remove("--rehidratar")
     print(f"[factor consolidacion: {factor}]", flush=True)
+    print(f"[rehidratar: {REHIDRATAR}]", flush=True)
     run(sys.argv[1] if len(sys.argv) > 1 else "enron")
