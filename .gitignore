@@ -7,5 +7,6 @@ node_modules/
 package-lock.json
 .wrangler/
 dist/
-memoria_exp/experiments/results/*_partial.jsonl
+memoria_exp/
 build/
+experiments/results/*_partial.jsonl
