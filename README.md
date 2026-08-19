@@ -45,13 +45,41 @@ y **Blog** (cocina diaria). Resultados canónicos (F=3) en
 La falsación es una **afirmación mecánica** (qué hace la memoria), no de
 utilidad aguas abajo. El acceso de agentes a La Caja y el protocolo de
 debate agente-agente-humano viven en el repo hermano
-[la-caja-mcp](https://github.com/deviceargent/la-caja-mcp).
+[la-caja-mcp](https://github.com/deviceargent/la-caja-mcp). El esqueleto
+del artículo (con los números de todos los experimentos) está en
+`experiments/writeup.md`.
 
 ## Uso
 
+### Instalación
+
+La Caja es un paquete de Python estándar (`la-caja`). Se puede instalar
+de tres formas, según de dónde venga el código:
+
 ```
+# 1. Publicado (PyPI): una vez publicado, un solo comando
+pip install la-caja
+
+# 2. Directo del repositorio (funciona hoy, sin esperar publicación)
+pip install git+https://github.com/deviceargent/La-Caja.git
+
+# 3. Desarrollo local: instala la copia del directorio actual
 pip install .
 ```
+
+Cómo funciona: `pyproject.toml` declara el paquete (nombre, versión,
+dependencias, autor). `pip install <origen>` construye un wheel (el
+archivo comprimido que Python instala) e instala el módulo `la_caja` en
+tu entorno (venv, conda, o el Python del sistema). Con `pip install la-caja`
+el origen es PyPI (el índice público de paquetes de Python); con `.` o
+`git+...` el origen es código local o un repo. El nombre de importación
+(`la_caja`, con guion bajo) no coincide con el de instalación (`la-caja`,
+con guion): esa es la convención de Python. Publicar a PyPI se hace
+tagueando el repo (`v0.7.0`) — el workflow `.github/workflows/pypi.yml`
+construye el wheel y lo sube automáticamente (trusted publishing, sin
+tokens). El README de este repo se convierte en la página del paquete.
+
+### Código
 
 ```python
 from la_caja import LaCaja
@@ -67,15 +95,15 @@ caja.stats()                          # terminos / nodos / aristas
 
 ```
 src/la_caja/        implementación (core.py)
-tests/              suite de determinismo y propiedades (46 tests)
-experiments/        falsación: exp_memoria.py + criterios + resultados
+tests/              suite de determinismo y propiedades (53 tests)
+experiments/        falsación, evals y el esqueleto del writeup (writeup.md)
 docs/               spec v2.0, addendum v2.1, acceso MCP
 ```
 
 ## Reproducir
 
 ```
-$env:PYTHONPATH="src"; python -m pytest tests -q        # 46/46
+$env:PYTHONPATH="src"; python -m pytest tests -q        # 53/53
 python experiments/exp_memoria.py enron|blog            # ver falsacion.md
 ```
 
