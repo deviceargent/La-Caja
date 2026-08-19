@@ -8,3 +8,4 @@ package-lock.json
 .wrangler/
 dist/
 memoria_exp/experiments/results/*_partial.jsonl
+build/
