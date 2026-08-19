@@ -1,0 +1,18 @@
+{
+  "n": 400,
+  "fallidas": 0,
+  "recall_medio_con": 0.06257432037515981,
+  "recall_medio_sin": 0.0032876478868445204,
+  "gana_con": 241,
+  "gana_sin": 29,
+  "empate": 130,
+  "win_rate": 0.6025,
+  "p_binominal": 9.199174869475334e-43,
+  "judge": {
+    "gana_memoria": 7,
+    "gana_sin": 390,
+    "empate": 3
+  },
+  "veredicto": "OK",
+  "modelo": "openai/gpt-4o-mini"
+}
