@@ -466,5 +466,67 @@ Resultado del eval (19/8/2026, Enron, 400 consultas, 0 fallidas):
   medido por C (C1/C2 ok, la memoria vence a su frecuencia local): falsa
   la hipotesis pre-registrada de que un LLM reranker amplifica la memoria
   en esta tarea. Queda registrado como limite: la co-ocurrencia como
-  ground truth no premia la relevancia semantica, que seria la senal que
-  un modelo si podria aportar.
+ground truth no premia la relevancia semantica, que seria la senal que
+   un modelo si podria aportar.
+
+## Eval de temas dormidos (pre-registro, 19/8/2026)
+
+Pregunta: donde la frecuencia NO puede ganar (temas dormidos, el limite
+honesto de la falsacion), la traza dormida (`historial`) es senal real de
+recuperacion, y un modelo + traza puede superar al modelo sin memoria y a
+la frecuencia. Harness: `experiments/eval_dormidos.py`, misma memoria de
+`test_c` (Enron, filtro, F=3, 60% pasado, rehidratar=False), consultas
+del 40% futuro, modelo `openai/gpt-4o-mini` via OpenRouter, temp 0, JSON.
+
+Pre-registro (se fija aqui, NO a la vista de resultados):
+
+1. **Consultas (seed 13):** docs futuros con >= 2 conocidos; hasta 2
+   terminos por doc con `historial(t)` NO vacio (condicion de tema
+   dormido). Respuesta = otros conocidos del doc. S = 400 o el total
+   disponible (se reporta n).
+2. **Pools (dedup):** `pool_traza` = top-15 partners de `historial(t)`
+   por fuerza_pico + primado(10) + top-frecuencia(10) + 10 aleatorios;
+   `pool_sin` = top-frecuencia(30) + 20 aleatorios.
+3. **Condiciones:** API: `modelo+traza` (rerank pool_traza) y
+   `modelo_sin_memoria` (rerank pool_sin). Sin API: `memoria_alone_traza`
+   = top-5 de (partners historial + primado); `memoria_alone_viva` =
+   top-5 del primado solo; `frecuencia` = top-5 frecuencia; `aleatorio`.
+   Techos: `techo_hist` = |historial(15) ∩ respuesta|/|respuesta|;
+   `techo_pool` = |pool_traza ∩ respuesta|/|respuesta|.
+4. **Metrica:** hit@5 = |top-5 ∩ respuesta|/|respuesta|, emparejada;
+   hit@1 secundaria; victorias emparejadas.
+5. **Veredicto** (FALSA si no se cumple):
+   - V1 (la traza expresa senal): `memoria_alone_traza` > `frecuencia`.
+   - V2 (la traza supera a la memoria viva en dormidos):
+     `memoria_alone_traza` > `memoria_alone_viva`.
+   - V3 (el modelo amplifica la traza): `modelo+traza` >
+     `memoria_alone_traza` Y > `modelo_sin_memoria`.
+   - V4 (modelo+traza vence a frecuencia): `modelo+traza` > `frecuencia`.
+6. **Control de leakage:** memoria y traza se construyen SOLO con el 60%
+   pasado; las respuestas son de docs futuros nunca ingeridos. Coste: 2
+   llamadas/consulta -> ~800; guardado incremental + resume + aborto por
+   credito (misma infra que el eval anterior).
+
+Resultado del eval de dormidos (19/8/2026, Enron, 400 consultas, 0
+fallidas; resume completo 400/400):
+
+- hit@5 emparejado: modelo+traza 0.019 < memoria_alone_traza 0.013 <
+  modelo_sin_memoria 0.040 < memoria_alone_viva 0.045 < frecuencia 0.102.
+  hit@1: modelo+traza 0.16 vs modelo_sin_memoria 0.49. techo_hist 0.030,
+  techo_pool 0.185.
+- Veredicto: V1/V2/V3/V4 FALSA.
+- Lectura honesta (LA respuesta a la pregunta): la traza dormida NO
+  expresa senal recuperable de co-ocurrencia futura. `techo_hist` 0.030:
+  de los partners olvidados (top-15 por fuerza historica), solo ~3% del
+  contenido de la respuesta aparece cuando el termino reaparece. Los
+  partners de un tema dormido rara vez vuelven en el MISMO doc futuro.
+  Esto NO contradice la rehidratacion (que si mejoro C en 1-6m): la
+  rehidratacion actua sobre la RE-observacion real de la pareja (la
+  restaura en la capa viva); la traza es una clave de rehidratacion y un
+  registro inerte, NO un predictor del contenido futuro. La traza como
+  senal de recuperacion (V1/V2) queda FALSADA; su rol honesto es el que
+  ya estaba pre-registrado: inercia + rehidratacion por re-observacion.
+- El limite de la falsacion se confirma y se delimita: la memoria viva
+  (memoria_alone_viva 0.045) sigue ganando a la traza en dormidos, y la
+  frecuencia gana a todo. En co-ocurrencia como ground truth, el modelo
+  no amplifica (consistente con el eval anterior).

@@ -1,0 +1,49 @@
+{
+  "modelo+traza": 0.018629052901623467,
+  "modelo_sin_memoria": 0.04028019048198323,
+  "memoria_alone_traza": 0.013207482211977267,
+  "memoria_alone_viva": 0.04498242578369175,
+  "frecuencia": 0.10216706134108175,
+  "aleatorio": 0.0008691473581086702,
+  "hit@1": {
+    "modelo+traza": 0.1625,
+    "modelo_sin_memoria": 0.4875
+  },
+  "techo_hist": 0.029804647363098624,
+  "techo_pool": 0.18479970580041483,
+  "n": 400,
+  "fallidas": 0,
+  "modelo": "openai/gpt-4o-mini",
+  "victorias_emparejadas": {
+    "modelo+traza > modelo_sin_memoria": [
+      29,
+      237
+    ],
+    "modelo+traza > memoria_alone_traza": [
+      126,
+      38
+    ],
+    "modelo+traza > frecuencia": [
+      10,
+      351
+    ],
+    "memoria_alone_traza > frecuencia": [
+      7,
+      362
+    ],
+    "memoria_alone_traza > memoria_alone_viva": [
+      55,
+      196
+    ]
+  },
+  "veredicto": {
+    "V1_traza_senal": "FALSA",
+    "V2_traza_sobre_viva": "FALSA",
+    "V3_modelo_amplifica": "FALSA",
+    "V4_vence_a_frecuencia": "FALSA"
+  },
+  "gaps_dias": {
+    "media": 19.7875,
+    "sin_gap": 0
+  }
+}
