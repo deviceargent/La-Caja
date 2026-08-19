@@ -1,0 +1,38 @@
+{
+  "modelo+memoria": 0.02690770316621411,
+  "modelo_sin_memoria": 0.04133081879887216,
+  "memoria_alone": 0.045378478993735066,
+  "frecuencia": 0.10225039467441509,
+  "aleatorio": 0.0008691473581086702,
+  "hit@1": {
+    "modelo+memoria": 0.2825,
+    "modelo_sin_memoria": 0.49
+  },
+  "techo_pool": 0.20397573697288962,
+  "n": 400,
+  "fallidas": 0,
+  "modelo": "openai/gpt-4o-mini",
+  "victorias_emparejadas": {
+    "modelo+memoria > modelo_sin_memoria": [
+      60,
+      204
+    ],
+    "modelo+memoria > memoria_alone": [
+      84,
+      152
+    ],
+    "modelo+memoria > frecuencia": [
+      16,
+      339
+    ]
+  },
+  "veredicto": {
+    "V1_modelo_sobre_memoria": "FALSA",
+    "V2_memoria_ayuda_al_modelo": "FALSA",
+    "V3_vence_a_frecuencia": "FALSA"
+  },
+  "gaps_dias": {
+    "media": 19.08,
+    "sin_gap": 0
+  }
+}

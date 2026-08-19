@@ -412,3 +412,59 @@ con 203 docs, casi ninguna relacion llega a podarse y a re-co-ocurrir
 reproduce en una corriente escasa -- y eso es un resultado util: confirma
 que el efecto esta ligado a la densidad de re-observaciones, no a un
 remedio universal de la memoria.
+
+## Eval contra modelo (pre-registro, 18/8/2026)
+
+Pregunta: la memoria (primado) ayuda a un modelo a recuperar los terminos
+que co-ocurren? Modelo: GPT-4o-mini (API OpenAI), temperature 0. El
+harness es `experiments/eval_modelo.py`, que reusa EXACTA la construccion
+de memoria de `test_c` (mismo corpus, mismo filtro, F=3, 60% pasado) y
+muestrea consultas del 40% futuro.
+
+Pre-registro (estos criterios se fijan aqui, NO a la vista de resultados):
+
+1. **Consultas:** S = 400 (default) pares (termino t, respuesta = co-ocurrentes
+   del mismo doc futuro, |respuesta| >= 1), muestreadas con semilla fija.
+   Pool del modelo = primado (presupuesto 50) + 10 top-frecuencia + 10
+   aleatorios (dedup, mismo pool para todas las condiciones).
+2. **Metrica:** hit@5 = |top-5 del ranking ∩ respuesta| / |respuesta|, promediada
+   sobre las S consultas (emparejadas: mismo conjunto respuesta).
+3. **Condiciones:** (a) modelo+memoria (rerank del pool con primado);
+   (b) modelo_sin_memoria (mismo modelo, pool de top-frecuencia + aleatorios
+   SIN primado); (c) memoria_alone (top-5 del propio ordenamiento del
+   primado); (d) frecuencia (top-5 de frecuencia global); (e) aleatorio.
+4. **Veredicto** (FALSA si no se cumple, sobre las S emparejadas):
+   - V1: el modelo anade senal sobre la memoria -> modelo+memoria > memoria_alone.
+   - V2: la memoria ayuda al modelo -> modelo+memoria > modelo_sin_memoria.
+   - V3: vence a la frecuencia -> modelo+memoria > frecuencia.
+   Se reporta ademas hit@1 y el techo del pool (|pool ∩ respuesta|/|respuesta|),
+   y la fraccion de consultas donde cada condicion gana.
+5. **Coste:** 2 llamadas por consulta (con y sin memoria) -> ~800 llamadas,
+   seed fija, sin tuning de la constante de memoria.
+
+Nota de infraestructura (19/8/2026): los proxies alternativos probados
+(gptgod, Naga, aihubmix) quedaron sin saldo o con limites de free-tier.
+El eval se corre con `openai/gpt-4o-mini` (EL modelo pre-registrado) via
+OpenRouter (`https://openrouter.ai/api/v1`), temperature 0, JSON mode,
+sobre la asignacion free-tier de la key. El pre-registro queda intacto.
+
+Resultado del eval (19/8/2026, Enron, 400 consultas, 0 fallidas):
+
+- hit@5 emparejado: modelo+memoria 0.027 < modelo_sin_memoria 0.041 <
+  memoria_alone 0.045 < frecuencia 0.102. hit@1: modelo+memoria 0.28 vs
+  modelo_sin_memoria 0.49. Techo del pool: 0.204.
+- Veredicto: V1 FALSA, V2 FALSA, V3 FALSA. Decidido, no marginal:
+  victorias emparejadas modelo+memoria -> sin_memoria 60/204, ->
+  memoria_alone 84/152, -> frecuencia 16/339 (de 400).
+- Lectura honesta: la tarea cloze usa como ground truth la co-ocurrencia
+  del corpus, que correlaciona con la frecuencia global; un reranker
+  semantico (gpt-4o-mini) no recupera esa senal mejor que la frecuencia
+  ni que el propio ordenamiento estadistico de la memoria (memoria_alone
+  > modelo+memoria: el modelo no anade, resta). El pool de primado (50
+  terminos con relaciones debiles) desvia al modelo de los terminos
+  frecuentes que son las respuestas. NO falsifica el valor de la memoria
+  medido por C (C1/C2 ok, la memoria vence a su frecuencia local): falsa
+  la hipotesis pre-registrada de que un LLM reranker amplifica la memoria
+  en esta tarea. Queda registrado como limite: la co-ocurrencia como
+  ground truth no premia la relevancia semantica, que seria la senal que
+  un modelo si podria aportar.
