@@ -608,3 +608,49 @@ actualizada, 2 tests nuevos, suite B 29 -> 31, y el harness re-corrido:
 Hallazgo: la solicitud de interferencia (preempear -> disputed -> ronda
 con deadline -> vence -> escalar -> humano desbloquea) funciona de punta
 a punta por streamable HTTP, no solo en el unit test.
+
+## Pre-registro 19/8/2026 — interrupcion entre agentes al medio del razonamiento
+
+La base del protocolo: un agente al medio del razonamiento debe ACEPTAR
+ser interrumpido por otro. Los agentes con modo texto exponen el
+razonamiento por etapas de conclusion. Harness `interrupcion_etapas.py`
+(B, la-caja-mcp) con dos agentes LLM reales (OpenRouter gpt-4o-mini)
+como clientes MCP: el autor razona por etapas y expone cada conclusion
+con `manifestar` (el medio de interrupcion); entre etapa y etapa
+consulta el estado; el interferente observa, solicita `interferir` al
+medio, y el autor cede respondiendo dentro de la ronda.
+
+Metricas (se reportan todas, sin cherry-pick):
+- ok_etapas: el autor expuso >= 1 etapa antes de ser interrumpido.
+- ok_interrupcion: el interferir ocurrio con el autor en candidate (sin
+  responder/escalar previos en el log): razonamiento en curso.
+- ok_cedio: el autor detecto disputed en una frontera, dejo de razonar y
+  respondio dentro de la ronda (vence_en_turnos > 0 al detectar).
+- ok_consensus: la sesion llega a consensus.
+- ok_replay: reproducir_sesion(log) == estado final.
+
+Veredicto FALSA si cualquiera de los ok_* es False.
+
+### Resultado (19/8/2026) — veredicto **OK**
+
+Con dos agentes LLM reales (OpenRouter gpt-4o-mini) como clientes MCP,
+el autor razono por etapas, el interferente lo interrumpio al medio del
+razonamiento, y el autor ACEPTO la interrupcion cediendo dentro de la
+ronda:
+
+- ok_etapas True (1 etapa expuesta antes de la interrupcion).
+- ok_interrupcion True (interferir con el autor en candidate; secuencia
+  `proponer -> manifestar -> interferir` sin responder/escalar previos).
+- ok_cedio True (detecto disputed en la frontera y respondio con
+  vence_en_turnos=2 > 0: el deadline quedo intacto, no ignoro, no
+  escalo).
+- ok_consensus True, ok_replay True (determinista).
+
+Secuencia completa del log:
+`proponer -> manifestar -> interferir -> responder -> aceptar`.
+
+Conclusion: la base del protocolo ES viable en la practica — un agente
+expone su razonamiento por etapas (manifestar = medio de interrupcion),
+otro solicita interrupcion al medio (interferir), y el interrumpido
+cede por protocolo (estado disputed + deadline lo fuerzan). El bucle de
+etapas con LLM real funciono de punta a punta por streamable HTTP.
