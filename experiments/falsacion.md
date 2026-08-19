@@ -403,3 +403,12 @@ pre-registrado "si la rehidratacion mejora C para vacios >= 1 mes":
   (modelo 0.0082 vs frecuencia 0.0255): la rehidratacion recupera senal
   pero no cierra el deficit de los temas dormidos. Ese limite sigue en
   pie; la traza dormida es la consulta honesta a esa capa.
+
+Replica en Blog (18/8/2026, `--rehidratar`): resultado NULO. `hit5_modelo`
+identico (0.08502 -> 0.08497), techo igual (0.1211), todos los rangos de
+vacio planos, sin regresion. La explicacion es mecanica, no de diseno:
+con 203 docs, casi ninguna relacion llega a podarse y a re-co-ocurrir
+(la rehidratacion es un mecanismo de evento-denso). La mejora Enron no se
+reproduce en una corriente escasa -- y eso es un resultado util: confirma
+que el efecto esta ligado a la densidad de re-observaciones, no a un
+remedio universal de la memoria.
