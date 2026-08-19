@@ -583,3 +583,28 @@ Resultado del caso de uso real (19/8/2026, harness `la-caja-mcp/experiments/uso_
   compartida en SQLite + debate + push SSE) funciona integrada fuera del
   unit test. Esta es una prueba de integracion; NO modifica las
   mediciones de calidad de memoria cerradas arriba.
+
+### Solicitud de interferencia completa (19/8/2026, mismo harness)
+
+La primer pasada del harness solo ejercito el camino feliz del debate
+(interferir -> consensus). Extendido con el camino de deadlock, destapo
+una inconsistencia real entre la docstring del protocolo y el codigo:
+
+- La docstring de `protocolo.py` promete que el humano adjudica "en
+  cualquier momento" tras `escalar` -> `unresolved` (deadlock).
+- El codigo lo bloqueaba: `_adjudicar` rechazaba `unresolved` por ser
+  terminal (`adjudicar sobre estado terminal`).
+
+Resolucion (decision del autor, 19/8): la docstring es la spec — el
+humano DEBE poder desbloquear el deadlock. `unresolved` pasa a ser el
+unico terminal que el arbitro puede adjudicar; `consensus`/`rejected`/
+`superseded` siguen cerrados (`ESTADOS_NO_ADJUDICABLES`). Docstring
+actualizada, 2 tests nuevos, suite B 29 -> 31, y el harness re-corrido:
+
+- `solicitud_interferencia`: ok_escalar True (deadline vence con la
+  charla del autor: vence_en_turnos 1 -> 0), ok_adjudicar True (humano
+  desbloquea a consensus), ok_replay True, ok_push True — veredicto OK.
+
+Hallazgo: la solicitud de interferencia (preempear -> disputed -> ronda
+con deadline -> vence -> escalar -> humano desbloquea) funciona de punta
+a punta por streamable HTTP, no solo en el unit test.
