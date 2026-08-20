@@ -44,6 +44,11 @@ Todos los veredictos en `experiments/falsacion.md`; los números en
 | Modelo re-ordenando la memoria (cloze) | **FALSA** — la frecuencia gana; el modelo resta |
 | **La Caja como soporte de memoria (pareado)** | **OK** — recall ~19x, p=9e-43 |
 
+![La Caja como soporte de memoria — recall con vs sin](https://raw.githubusercontent.com/deviceargent/La-Caja/main/docs/figures/tesis_pareada.png)
+![Veredictos por consulta — win_rate](https://raw.githubusercontent.com/deviceargent/La-Caja/main/docs/figures/tesis_veredictos.png)
+![Evidencia final — resumen de los criterios](https://raw.githubusercontent.com/deviceargent/La-Caja/main/docs/figures/resumen_evidencia.png)
+![Rehidratación por re-observación](https://raw.githubusercontent.com/deviceargent/La-Caja/main/docs/figures/rehidratacion.png)
+
 La tesis quedó validada sobre 400 consultas (gpt-4o-mini, Enron): el
 mismo modelo con La Caja recupera el vocabulario real del corpus ~19x
 mejor que sin ella. Los límites son parte del diseño: la memoria no
@@ -96,6 +101,7 @@ src/la_caja/        implementación (core.py)
 tests/              suite de determinismo y propiedades (53 tests)
 experiments/        falsación, evals y el writeup final (writeup.md)
 docs/               spec v2.0, addendum v2.1, acceso MCP
+docs/figures/       gráficos de barra de la evidencia (generados por experiments/graficos.py)
 ```
 
 ## Reproducir
