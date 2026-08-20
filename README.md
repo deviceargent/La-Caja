@@ -1,114 +1,114 @@
 # La Caja
 
-Memoria contextual asociativa para modelos de lenguaje: lo que el modelo
-**observó** en su vida, con olvido, discriminación entre recuerdo e
-inferencia, y primado de contexto. Arquitectura **falsable**: cada
-mecanismo tiene un criterio pre-registrado y un experimento que puede
-refutarlo.
+Contextual associative memory for language models: what the model
+**observed** during its lifetime, with forgetting, discrimination between
+recall and inference, and context priming. **Falsifiable** architecture:
+every mechanism has a pre-registered criterion and an experiment that can
+refute it.
 
-Este repositorio contiene la **implementación**, su **falsación
-empírica** y la **validación de la tesis**: *La Caja como soporte de
-memoria mejora al modelo que la usa* (win_rate 0.60, p=9e-43). El acceso
-de agentes y el protocolo de debate agente-agente-humano viven en el repo
-hermano [la-caja-mcp](https://github.com/deviceargent/la-caja-mcp).
+This repository contains the **implementation**, its **empirical
+falsification**, and the **thesis validation**: *La Caja as a memory
+support improves the model that uses it* (win_rate 0.60, p=9e-43). Agent
+access and the agent–agent–human debate protocol live in the sibling repo
+[la-caja-mcp](https://github.com/deviceargent/la-caja-mcp).
 
-## Qué hace
+Español: [README.es.md](README.es.md)
 
-- **Multi-pertenencia**: los conceptos (burbujas) viven en nodos
-  compartidos; un término puede participar en varios contextos.
-- **Confianza observado/inferido**: la navegación distingue lo
-  co-ocurrido (1.0) del cierre transitivo (`0.5^puentes`). Compartir un
-  término en consultas distintas NO conecta: no se inventan puentes.
-- **Olvido**: decaimiento por consolidación; las asociaciones que no se
-  repiten mueren. El primado de contexto resucita temas dormidos
-  (recuperación temporal).
-- **Traza dormida (v0.7)**: lo olvidado no se borra — queda como traza
-  inerte, clave de rehidratación por re-observación (rol honesto: NO
-  predice el futuro).
-- **Persistencia event-sourced** (opt-in): `PiscinaPersistente` registra
-  cada mutación; un snapshot replayable reconstruye el estado exacto.
+## What it does
 
-## Evidencia (resumen honesto)
+- **Multi-membership**: concepts (bubbles) live on shared nodes; one term
+  can participate in several contexts.
+- **Observed/inferred confidence**: navigation distinguishes co-occurrence
+  (1.0) from transitive closure (`0.5^hops`). Sharing a term across
+  different queries does NOT connect: no bridges are invented.
+- **Forgetting**: decay through consolidation; associations that are not
+  repeated die. Context priming revives dormant topics (temporary
+  recovery).
+- **Dormant trace (v0.7)**: what was forgotten is not deleted — it stays
+  as an inert trace, a key for rehydration by re-observation (honest
+  role: it does NOT predict the future).
+- **Event-sourced persistence** (opt-in): `PiscinaPersistente` records
+  every mutation; a replayable snapshot reconstructs the exact state.
 
-Todos los veredictos en `experiments/falsacion.md`; los números en
+## Evidence (honest summary)
+
+All verdicts in `experiments/falsacion.md`; the numbers in
 `experiments/results/`.
 
-| Criterio | Resultado |
+| Criterion | Result |
 |---|---|
-| C1/C2 — recuperación temporal (primado) | **ok** (Enron 2.2×, Blog ok) |
-| A/B — discriminación y fidelidad | **ok** en Enron; A1/B1 **FALSA** en Blog (causa documentada) |
-| Rehidratación (Enron, 1-6m) | **+41%** |
-| La traza dormida predice el futuro | **FALSA** (techo 0.03) — inercia, no predicción |
-| Modelo re-ordenando la memoria (cloze) | **FALSA** — la frecuencia gana; el modelo resta |
-| **La Caja como soporte de memoria (pareado)** | **OK** — recall ~19x, p=9e-43 |
+| C1/C2 — temporary recovery (priming) | **ok** (Enron 2.2×, Blog ok) |
+| A/B — discrimination and fidelity | **ok** in Enron; A1/B1 **FALSE** in Blog (cause documented) |
+| Rehydration (Enron, 1-6m) | **+41%** |
+| The dormant trace predicts the future | **FALSE** (ceiling 0.03) — inertia, not prediction |
+| Model re-ranking the memory (cloze) | **FALSE** — frequency wins; the model subtracts |
+| **La Caja as memory support (paired)** | **OK** — recall ~19x, p=9e-43 |
 
-La tesis quedó validada sobre 400 consultas (gpt-4o-mini, Enron): el
-mismo modelo con La Caja recupera el vocabulario real del corpus ~19x
-mejor que sin ella. Los límites son parte del diseño: la memoria no
-compite con la frecuencia en cloze co-ocurrencial, y no es una memoria de
-largo plazo (el primado no resucita temas dormidos ≥ 1 mes).
+The thesis was validated on 400 queries (gpt-4o-mini, Enron): the same
+model with La Caja recovers the real corpus vocabulary ~19x better than
+without it. The limits are part of the design: the memory does not compete
+with frequency in co-occurrence cloze, and it is not a long-term memory
+(priming does not revive topics dormant for ≥ 1 month).
 
-El protocolo de acceso (repo B) quedó probado de punta a punta con LLM
-reales: debate, solicitud de interferencia con deadline, escalada humana,
-e **interrupción al medio del razonamiento** (el agente cede dentro de la
-ronda).
+The access protocol (repo B) was proven end to end with real LLMs: debate,
+interference request with deadline, human escalation, and **interruption
+mid-reasoning** (the agent yields within the round).
 
-## Uso
+## Usage
 
-### Instalación
+### Installation
 
-Paquete de Python estándar (`la-caja`):
+Standard Python package (`la-caja`):
 
 ```
-# 1. Publicado (PyPI): una vez publicado, un solo comando
+# 1. Published (PyPI): a single command
 pip install la-caja
 
-# 2. Directo del repositorio (funciona hoy, sin esperar publicación)
+# 2. Direct from the repository (works today)
 pip install git+https://github.com/deviceargent/La-Caja.git
 
-# 3. Desarrollo local: instala la copia del directorio actual
+# 3. Local development: installs the current directory
 pip install .
 ```
 
-Publicar a PyPI se hace tagueando el repo (`v0.7.0`) — el workflow
-`.github/workflows/pypi.yml` construye el wheel y lo sube automáticamente
-(trusted publishing, sin tokens). El README se convierte en la página del
-paquete.
+Publishing to PyPI is done by tagging the repo (`v0.7.0`) — the workflow
+`.github/workflows/pypi.yml` builds the wheel and uploads it automatically
+(trusted publishing, no tokens). The README becomes the package page.
 
-### Código
+### Code
 
 ```python
 from la_caja import LaCaja
 
-caja = LaCaja()                       # o LaCaja(db_path="memoria.db")
+caja = LaCaja()                       # or LaCaja(db_path="memoria.db")
 caja.procesar_consulta("el sol tiene masa")
-caja.consultar("sol", "masa")         # 1.0 (observado)
-caja.contexto_primado("sol", 10)      # contexto asociativo a inyectar
-caja.stats()                          # terminos / nodos / aristas
+caja.consultar("sol", "masa")         # 1.0 (observed)
+caja.contexto_primado("sol", 10)      # associative context to inject
+caja.stats()                          # terms / nodes / edges
 ```
 
-## Estructura
+## Structure
 
 ```
-src/la_caja/        implementación (core.py)
-tests/              suite de determinismo y propiedades (53 tests)
-experiments/        falsación, evals y el writeup final (writeup.md)
-docs/               spec v2.0, addendum v2.1, acceso MCP
+src/la_caja/        implementation (core.py)
+tests/              determinism and property suite (53 tests)
+experiments/        falsification, evals, and the final writeup (writeup.md)
+docs/               spec v2.0, addendum v2.1, MCP access
 ```
 
-## Reproducir
+## Reproduce
 
 ```
 $env:PYTHONPATH="src"; python -m pytest tests -q        # 53/53
-python experiments/exp_memoria.py enron|blog            # ver falsacion.md
-python experiments/eval_pareado_memoria.py              # la tesis (requiere OPENAI_API_KEY)
+python experiments/exp_memoria.py enron|blog            # see falsacion.md
+python experiments/eval_pareado_memoria.py              # the thesis (needs OPENAI_API_KEY)
 ```
 
-Los experimentos necesitan los corpus (parquet de Enron y Blog
-Authorship). Apuntá con `MEMORIA_DATOS=<dir>` al directorio con
-`enron_00000.parquet` y `blogs/blogs/`; los resultados canónicos van a
-`MEMORIA_RESULTADOS` (default `experiments/results/`).
+The experiments need the corpora (Enron and Blog Authorship parquet).
+Point `MEMORIA_DATOS=<dir>` to the directory with `enron_00000.parquet`
+and `blogs/blogs/`; canonical results go to `MEMORIA_RESULTADOS` (default
+`experiments/results/`).
 
-## Licencia
+## License
 
-MIT — ver [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE).
