@@ -212,6 +212,41 @@ FILTRO_ONTOLOGICO_DEFAULT = {
     # pronombres interrogativos / auxiliares triviales
     "qué", "cual", "cuál", "quien", "quién", "como", "cómo",
     "tiene", "es", "son", "esta", "está", "hay",
+    # negacion / adverbios deicticos y temporales
+    "no", "ya", "tambien", "también", "tampoco", "solo", "sólo",
+    "asi", "así", "ahora", "antes", "despues", "después", "luego",
+    "casi", "aqui", "aquí", "ahi", "ahí", "alli", "allí", "hoy",
+    "ayer", "siempre", "nunca", "muy", "mas", "más", "tan", "tanto",
+    "tantos", "tantas", "pues", "entonces", "incluso", "ademas",
+    "además", "sino", "tal",
+    # pronombres personales y reflexivos
+    "me", "te", "se", "le", "les", "nos", "os", "lo", "mi", "mí",
+    "ti", "él", "ella", "ellos", "ellas", "usted", "ustedes",
+    "nosotros", "vosotros", "ustedes",
+    # determinantes demostrativos y cuantificadores
+    "este", "estos", "ese", "esa", "eso", "esos", "esas",
+    "aquel", "aquella", "aquello", "aquellos", "aquellas",
+    "todo", "toda", "todos", "todas", "otro", "otra", "otros",
+    "otras", "cada", "varios", "varias", "algo", "nada", "alguien",
+    "nadie", "mismo", "misma", "mismos", "mismas",
+    # verbos auxiliares / copula / movimiento trivial
+    "ser", "estar", "fue", "era", "iban", "va", "van", "voy",
+    "estan", "están", "habia", "había", "he", "has", "ha", "hemos",
+    "han", "puede", "pueden", "debe", "deben", "hace", "hacer",
+    "vez",
+    # nucleo funcional del ingles (corpus mixtos: enron, blog)
+    "the", "of", "and", "to", "in", "is", "was", "are", "were",
+    "be", "been", "being", "have", "has", "had", "do", "does",
+    "did", "will", "would", "can", "could", "should", "shall",
+    "may", "might", "must", "it", "its", "this", "that", "these",
+    "those", "there", "here", "as", "at", "by", "for", "from",
+    "with", "without", "on", "or", "an", "not", "but", "if",
+    "then", "than", "so", "such", "we", "you", "they", "he",
+    "she", "his", "her", "their", "our", "your", "my", "i",
+    "into", "about", "over", "under", "again", "also", "just",
+    "only", "very", "too", "more", "most", "some", "any", "all",
+    "each", "other", "which", "who", "whom", "what", "when",
+    "where", "why", "how",
 }
 
 VENTANA_COOCURRENCIA = 4
@@ -249,8 +284,11 @@ def _ahora():
 
 
 def _tokenizar(texto):
-    """Extrae palabras, sin puntuacion, en minusculas."""
-    return re.findall(r"[a-záéíóúñü]+", texto.lower())
+    """Extrae palabras, sin puntuacion, en minusculas. Incluye digitos:
+    los tokens con letras y numeros son terminos de primera clase
+    (pc98, h264, v2, ff09c4) -- sin esto, el canonicalizador los
+    truncaba a la parte alfabetica y colapsaban versiones distintas."""
+    return re.findall(r"[a-záéíóúñü0-9]+", texto.lower())
 
 
 class Burbuja:
@@ -751,6 +789,36 @@ class Piscina:
             }
 
 
+class _Lote:
+    """Context manager devuelto por PiscinaPersistente.lote()."""
+
+    def __init__(self, piscina, commit_cada):
+        self.piscina = piscina
+        self.commit_cada = max(1, int(commit_cada))
+
+    def __enter__(self):
+        p = self.piscina
+        previa = getattr(p, "_lote_profundidad", 0)
+        p._lote_profundidad = previa + 1
+        if p._lote_profundidad == 1:
+            p._lote_commit_cada = self.commit_cada
+            p._lote_pendientes = 0
+        return p
+
+    def __exit__(self, exc_type, exc, tb):
+        p = self.piscina
+        p._lote_profundidad -= 1
+        if p._lote_profundidad == 0:
+            # comitea tambien ante excepcion: la memoria en vivo no se
+            # puede revertir, y el disco debe reflejarla.
+            try:
+                p.db.commit()
+            finally:
+                p.snapshot()
+                p._lote_pendientes = 0
+        return False
+
+
 class PiscinaPersistente(Piscina):
     """Piscina con event-sourcing: cada metodo mutante se registra en
     SQLite (metodo, argumentos) ademas de aplicarse en memoria. Al
@@ -786,10 +854,34 @@ class PiscinaPersistente(Piscina):
             "INSERT INTO eventos (metodo, argumentos, creado_en) VALUES (?, ?, ?)",
             (metodo, json.dumps(argumentos), _ahora()),
         )
-        self.db.commit()
         self._eventos_desde_snapshot += 1
+        if getattr(self, "_lote_profundidad", 0) > 0:
+            # ingesta por lotes: difiere commit y snapshot. El log queda
+            # identico (mismo orden y contenido); solo cambia CUANDO se
+            # persiste.
+            self._lote_pendientes += 1
+            if self._lote_pendientes >= self._lote_commit_cada:
+                self.db.commit()
+                self._lote_pendientes = 0
+            return
+        self.db.commit()
         if self._eventos_desde_snapshot >= self.snapshot_cada:
             self.snapshot()
+
+    def lote(self, commit_cada=500):
+        """Context manager de ingesta por lotes:
+
+            with piscina.lote():
+                for texto in corpus:
+                    caja.procesar_consulta(texto)
+
+        Comitea cada `commit_cada` eventos y toma UN solo snapshot al
+        salir (el snapshot serializa el estado completo: hacerlo cada
+        N eventos domina el costo en piscinas grandes). Ante excepcion
+        tambien comitea al salir: el estado en memoria ya no puede
+        revertirse, y memoria y disco deben quedar sincronizados.
+        Anidado, el lote interno es un no-op: manda el mas externo."""
+        return _Lote(self, commit_cada)
 
     def crear_burbuja(self, termino):
         resultado = super().crear_burbuja(termino)
@@ -923,6 +1015,10 @@ class Caja:
     def _filtrar(self, terminos):
         vistos = []
         for t in terminos:
+            if t.isdigit():
+                # numeros puros (fechas, cantidades): anclas asociativas
+                # pobres; los mixtos (pc98) si pasan.
+                continue
             if t not in self.filtro and t not in vistos:
                 vistos.append(t)
         return vistos
@@ -1004,6 +1100,13 @@ class LaCaja:
         self.piscina = PiscinaPersistente(db_path) if db_path else Piscina()
         self.piscina.rehidratar = rehidratar
         self.caja = Caja(self.piscina, filtro_ontologico, ventana_coocurrencia, rehidratar)
+
+    def lote(self, commit_cada=500):
+        """Context manager de ingesta por lotes (delega en la piscina;
+        requiere PiscinaPersistente). Ver PiscinaPersistente.lote()."""
+        if not isinstance(self.piscina, PiscinaPersistente):
+            raise TypeError("lote() requiere una piscina persistente (db_path)")
+        return self.piscina.lote(commit_cada)
 
     def normalizar_termino(self, termino):
         """Resuelve una forma superficial a su concepto canonico: alias
