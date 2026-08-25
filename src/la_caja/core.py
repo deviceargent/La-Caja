@@ -940,6 +940,13 @@ class PiscinaPersistente(Piscina):
             "INSERT INTO snapshots (ultimo_evento_id, estado, creado_en) VALUES (?, ?, ?)",
             (ultimo, json.dumps(self.a_dict()), _ahora()),
         )
+        # retencion: los snapshots son grafos completos (~150 MB cada uno);
+        # sin poda la tabla crece ~90% del peso de la db. Se conservan los
+        # ultimos 2 por si un write queda cortado a la mitad.
+        self.db.execute(
+            "DELETE FROM snapshots WHERE id NOT IN "
+            "(SELECT id FROM snapshots ORDER BY id DESC LIMIT 2)"
+        )
         self.db.commit()
         self._eventos_desde_snapshot = 0
 
