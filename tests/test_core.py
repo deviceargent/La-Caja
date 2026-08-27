@@ -935,3 +935,93 @@ def test_traza_y_rehidratacion_replay_byte_identical(tmp_path):
     _reset_id_sequence()
     la2 = LaCaja(db_path=db_path, rehidratar=True)
     assert la2.piscina.a_dict() == estado
+
+
+# ---------------------------------------------------------------------------
+# Ingesta por lotes (PiscinaPersistente.lote) y tokenizacion con digitos
+# ---------------------------------------------------------------------------
+
+import pytest
+from la_caja.core import _tokenizar
+
+
+def test_tokenizador_conserva_digitos_internos():
+    assert _tokenizar("Pastel98 corre h264 y FF09C4") == [
+        "pastel98", "corre", "h264", "y", "ff09c4",
+    ]
+
+
+def test_numeros_puros_se_filtran_los_mixtos_pasan():
+    la = LaCaja()
+    la.procesar_consulta("en 2026 nacio el estandar pc98")
+    assert la.piscina.existe("pc98")
+    assert not la.piscina.existe("2026"), \
+        "los numeros puros no deben volverse burbujas"
+
+
+def test_filtro_ampliado_saca_ruido_espanol():
+    la = LaCaja()
+    la.procesar_consulta("no ya lo se todo pero gravedad brilla")
+    assert la.piscina.existe("gravedad")
+    assert la.piscina.existe("brilla")
+    for ruido in ("no", "ya", "lo", "se", "todo", "pero"):
+        assert not la.piscina.existe(ruido), ruido
+
+
+def test_lote_persiste_y_replaya_igual(tmp_path):
+    db_path = str(tmp_path / "lote.db")
+    _reset_id_sequence()
+    la1 = LaCaja(db_path=db_path)
+    with la1.lote():
+        for texto in ("gravedad masa energia", "sol luna eclipse",
+                      "pastel98 flatlaf tema"):
+            la1.procesar_consulta(texto)
+    estado = la1.piscina.a_dict()
+    n_eventos = la1.piscina.db.execute(
+        "SELECT COUNT(*) FROM eventos").fetchone()[0]
+    la1.piscina.db.close()
+
+    _reset_id_sequence()
+    la2 = LaCaja(db_path=db_path)
+    assert la2.piscina.a_dict() == estado
+    # el log completo sobrevive: el replay no depende del snapshot solo
+    assert la2.piscina.db.execute(
+        "SELECT COUNT(*) FROM eventos").fetchone()[0] >= n_eventos > 0
+
+
+def test_lote_flushea_ante_excepcion(tmp_path):
+    db_path = str(tmp_path / "excepcion.db")
+    _reset_id_sequence()
+    la = LaCaja(db_path=db_path)
+    with pytest.raises(RuntimeError):
+        with la.lote():
+            la.procesar_consulta("alfa beta")
+            raise RuntimeError("corte a mitad de la ingesta")
+    la.piscina.db.close()
+
+    _reset_id_sequence()
+    la2 = LaCaja(db_path=db_path)
+    assert la2.consultar("alfa", "beta") == 1.0, \
+        "lo ya procesado en memoria debe quedar persistido"
+
+
+def test_lote_anidado_el_externo_manda(tmp_path):
+    db_path = str(tmp_path / "anidado.db")
+    _reset_id_sequence()
+    la = LaCaja(db_path=db_path)
+    with la.lote():
+        la.procesar_consulta("uno dos")
+        with la.lote(commit_cada=1):  # interno: no-op
+            la.procesar_consulta("tres cuatro")
+        la.procesar_consulta("cinco seis")
+    la.piscina.db.close()
+
+    _reset_id_sequence()
+    la2 = LaCaja(db_path=db_path)
+    for par in (("uno", "dos"), ("tres", "cuatro"), ("cinco", "seis")):
+        assert la2.consultar(*par) == 1.0, par
+
+
+def test_lote_en_piscina_de_memoria_rechazado():
+    with pytest.raises(TypeError):
+        LaCaja().lote()
