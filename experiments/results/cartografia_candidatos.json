@@ -1,0 +1,1139 @@
+{
+ "capa": "candidatos",
+ "resumen": {
+  "puente_arista": 4,
+  "articulo": 4,
+  "frontera": 10,
+  "hub_anomalo": 6,
+  "densidad_local": 8,
+  "motivo_recurrencia": 1
+ },
+ "candidatos": [
+  {
+   "id": "puente_arista-1",
+   "tipo": "puente_arista",
+   "capa": "candidato",
+   "titulo": "'raiz'-'savia' sostiene trafico entre regiones",
+   "elementos": {
+    "terminos": [
+     "raiz",
+     "savia"
+    ]
+   },
+   "evidencia": {
+    "intermediacion_arista": 0.0146,
+    "fuerza_observada": 2,
+    "comunidades": [
+     2,
+     0
+    ],
+    "cruza_comunidades": true
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "puente_arista-2",
+   "tipo": "puente_arista",
+   "capa": "candidato",
+   "titulo": "'grafo'-'conecta' sostiene trafico entre regiones",
+   "elementos": {
+    "terminos": [
+     "grafo",
+     "conecta"
+    ]
+   },
+   "evidencia": {
+    "intermediacion_arista": 0.0097,
+    "fuerza_observada": 1,
+    "comunidades": [
+     2,
+     3
+    ],
+    "cruza_comunidades": true
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "puente_arista-3",
+   "tipo": "puente_arista",
+   "capa": "candidato",
+   "titulo": "'grafo'-'raiz' sostiene trafico entre regiones",
+   "elementos": {
+    "terminos": [
+     "grafo",
+     "raiz"
+    ]
+   },
+   "evidencia": {
+    "intermediacion_arista": 0.0087,
+    "fuerza_observada": 2,
+    "comunidades": [
+     2,
+     2
+    ],
+    "cruza_comunidades": false
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "puente_arista-4",
+   "tipo": "puente_arista",
+   "capa": "candidato",
+   "titulo": "'savia'-'ramas' sostiene trafico entre regiones",
+   "elementos": {
+    "terminos": [
+     "savia",
+     "ramas"
+    ]
+   },
+   "evidencia": {
+    "intermediacion_arista": 0.0084,
+    "fuerza_observada": 1,
+    "comunidades": [
+     0,
+     0
+    ],
+    "cruza_comunidades": false
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "articulo-1",
+   "tipo": "articulo",
+   "capa": "candidato",
+   "titulo": "quitar 'conecta' desconecta el grafo observado",
+   "elementos": {
+    "terminos": [
+     "conecta"
+    ]
+   },
+   "evidencia": {
+    "grado": 2,
+    "intermediacion": 0.005
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "articulo-2",
+   "tipo": "articulo",
+   "capa": "candidato",
+   "titulo": "quitar 'grafo' desconecta el grafo observado",
+   "elementos": {
+    "terminos": [
+     "grafo"
+    ]
+   },
+   "evidencia": {
+    "grado": 5,
+    "intermediacion": 0.0108
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "articulo-3",
+   "tipo": "articulo",
+   "capa": "candidato",
+   "titulo": "quitar 'ramas' desconecta el grafo observado",
+   "elementos": {
+    "terminos": [
+     "ramas"
+    ]
+   },
+   "evidencia": {
+    "grado": 4,
+    "intermediacion": 0.0052
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "articulo-4",
+   "tipo": "articulo",
+   "capa": "candidato",
+   "titulo": "quitar 'savia' desconecta el grafo observado",
+   "elementos": {
+    "terminos": [
+     "savia"
+    ]
+   },
+   "evidencia": {
+    "grado": 5,
+    "intermediacion": 0.0162
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "frontera-1",
+   "tipo": "frontera",
+   "capa": "candidato",
+   "titulo": "limite de comunidades: 'hoja' (1) - 'raiz' (2)",
+   "elementos": {
+    "terminos": [
+     "hoja",
+     "raiz"
+    ]
+   },
+   "evidencia": {
+    "fuerza_observada": 2,
+    "comunidades": [
+     1,
+     2
+    ],
+    "nota": "arista observada que cruza una particion de modularidad"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "frontera-2",
+   "tipo": "frontera",
+   "capa": "candidato",
+   "titulo": "limite de comunidades: 'raiz' (2) - 'savia' (0)",
+   "elementos": {
+    "terminos": [
+     "raiz",
+     "savia"
+    ]
+   },
+   "evidencia": {
+    "fuerza_observada": 2,
+    "comunidades": [
+     2,
+     0
+    ],
+    "nota": "arista observada que cruza una particion de modularidad"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "frontera-3",
+   "tipo": "frontera",
+   "capa": "candidato",
+   "titulo": "limite de comunidades: 'arbol' (1) - 'grafo' (2)",
+   "elementos": {
+    "terminos": [
+     "arbol",
+     "grafo"
+    ]
+   },
+   "evidencia": {
+    "fuerza_observada": 1,
+    "comunidades": [
+     1,
+     2
+    ],
+    "nota": "arista observada que cruza una particion de modularidad"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "frontera-4",
+   "tipo": "frontera",
+   "capa": "candidato",
+   "titulo": "limite de comunidades: 'hoja' (1) - 'rama' (0)",
+   "elementos": {
+    "terminos": [
+     "hoja",
+     "rama"
+    ]
+   },
+   "evidencia": {
+    "fuerza_observada": 1,
+    "comunidades": [
+     1,
+     0
+    ],
+    "nota": "arista observada que cruza una particion de modularidad"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "frontera-5",
+   "tipo": "frontera",
+   "capa": "candidato",
+   "titulo": "limite de comunidades: 'hoja' (1) - 'arista' (2)",
+   "elementos": {
+    "terminos": [
+     "hoja",
+     "arista"
+    ]
+   },
+   "evidencia": {
+    "fuerza_observada": 1,
+    "comunidades": [
+     1,
+     2
+    ],
+    "nota": "arista observada que cruza una particion de modularidad"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "frontera-6",
+   "tipo": "frontera",
+   "capa": "candidato",
+   "titulo": "limite de comunidades: 'hoja' (1) - 'camino' (2)",
+   "elementos": {
+    "terminos": [
+     "hoja",
+     "camino"
+    ]
+   },
+   "evidencia": {
+    "fuerza_observada": 1,
+    "comunidades": [
+     1,
+     2
+    ],
+    "nota": "arista observada que cruza una particion de modularidad"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "frontera-7",
+   "tipo": "frontera",
+   "capa": "candidato",
+   "titulo": "limite de comunidades: 'grafo' (2) - 'conecta' (3)",
+   "elementos": {
+    "terminos": [
+     "grafo",
+     "conecta"
+    ]
+   },
+   "evidencia": {
+    "fuerza_observada": 1,
+    "comunidades": [
+     2,
+     3
+    ],
+    "nota": "arista observada que cruza una particion de modularidad"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "frontera-8",
+   "tipo": "frontera",
+   "capa": "candidato",
+   "titulo": "limite de comunidades: 'grafo' (2) - 'nodo' (1)",
+   "elementos": {
+    "terminos": [
+     "grafo",
+     "nodo"
+    ]
+   },
+   "evidencia": {
+    "fuerza_observada": 1,
+    "comunidades": [
+     2,
+     1
+    ],
+    "nota": "arista observada que cruza una particion de modularidad"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "frontera-9",
+   "tipo": "frontera",
+   "capa": "candidato",
+   "titulo": "limite de comunidades: 'raiz' (2) - 'rama' (0)",
+   "elementos": {
+    "terminos": [
+     "raiz",
+     "rama"
+    ]
+   },
+   "evidencia": {
+    "fuerza_observada": 1,
+    "comunidades": [
+     2,
+     0
+    ],
+    "nota": "arista observada que cruza una particion de modularidad"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "frontera-10",
+   "tipo": "frontera",
+   "capa": "candidato",
+   "titulo": "limite de comunidades: 'arista' (2) - 'nodo' (1)",
+   "elementos": {
+    "terminos": [
+     "arista",
+     "nodo"
+    ]
+   },
+   "evidencia": {
+    "fuerza_observada": 1,
+    "comunidades": [
+     2,
+     1
+    ],
+    "nota": "arista observada que cruza una particion de modularidad"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "hub_anomalo-1",
+   "tipo": "hub_anomalo",
+   "capa": "candidato",
+   "titulo": "'hoja' concentra grado (z=4.3)",
+   "elementos": {
+    "terminos": [
+     "hoja"
+    ]
+   },
+   "evidencia": {
+    "grado": 8,
+    "z_grado": 4.28,
+    "baseline": "distribucion de grados observada"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "hub_anomalo-2",
+   "tipo": "hub_anomalo",
+   "capa": "candidato",
+   "titulo": "'raiz' concentra grado (z=3.1)",
+   "elementos": {
+    "terminos": [
+     "raiz"
+    ]
+   },
+   "evidencia": {
+    "grado": 6,
+    "z_grado": 3.1,
+    "baseline": "distribucion de grados observada"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "hub_anomalo-3",
+   "tipo": "hub_anomalo",
+   "capa": "candidato",
+   "titulo": "'grafo' concentra grado (z=2.5)",
+   "elementos": {
+    "terminos": [
+     "grafo"
+    ]
+   },
+   "evidencia": {
+    "grado": 5,
+    "z_grado": 2.5,
+    "baseline": "distribucion de grados observada"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "hub_anomalo-4",
+   "tipo": "hub_anomalo",
+   "capa": "candidato",
+   "titulo": "'savia' concentra grado (z=2.5)",
+   "elementos": {
+    "terminos": [
+     "savia"
+    ]
+   },
+   "evidencia": {
+    "grado": 5,
+    "z_grado": 2.5,
+    "baseline": "distribucion de grados observada"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "hub_anomalo-5",
+   "tipo": "hub_anomalo",
+   "capa": "candidato",
+   "titulo": "'camino' concentra grado (z=2.5)",
+   "elementos": {
+    "terminos": [
+     "camino"
+    ]
+   },
+   "evidencia": {
+    "grado": 5,
+    "z_grado": 2.5,
+    "baseline": "distribucion de grados observada"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "hub_anomalo-6",
+   "tipo": "hub_anomalo",
+   "capa": "candidato",
+   "titulo": "'nodo' concentra grado (z=2.5)",
+   "elementos": {
+    "terminos": [
+     "nodo"
+    ]
+   },
+   "evidencia": {
+    "grado": 5,
+    "z_grado": 2.5,
+    "baseline": "distribucion de grados observada"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "densidad_local-1",
+   "tipo": "densidad_local",
+   "capa": "candidato",
+   "titulo": "'tallo': regimen de conectividad local denso",
+   "elementos": {
+    "terminos": [
+     "tallo"
+    ]
+   },
+   "evidencia": {
+    "clustering_local": 1.0,
+    "clustering_global": 0.1,
+    "delta": 0.9,
+    "clustering_esperado_nulo": 0.049,
+    "baseline": "modelo de configuracion (misma secuencia de grados)"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "densidad_local-2",
+   "tipo": "densidad_local",
+   "capa": "candidato",
+   "titulo": "'sostiene': regimen de conectividad local denso",
+   "elementos": {
+    "terminos": [
+     "sostiene"
+    ]
+   },
+   "evidencia": {
+    "clustering_local": 1.0,
+    "clustering_global": 0.1,
+    "delta": 0.9,
+    "clustering_esperado_nulo": 0.049,
+    "baseline": "modelo de configuracion (misma secuencia de grados)"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "densidad_local-3",
+   "tipo": "densidad_local",
+   "capa": "candidato",
+   "titulo": "'expansion': regimen de conectividad local denso",
+   "elementos": {
+    "terminos": [
+     "expansion"
+    ]
+   },
+   "evidencia": {
+    "clustering_local": 1.0,
+    "clustering_global": 0.1,
+    "delta": 0.9,
+    "clustering_esperado_nulo": 0.049,
+    "baseline": "modelo de configuracion (misma secuencia de grados)"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "densidad_local-4",
+   "tipo": "densidad_local",
+   "capa": "candidato",
+   "titulo": "'arista': regimen de conectividad local denso",
+   "elementos": {
+    "terminos": [
+     "arista"
+    ]
+   },
+   "evidencia": {
+    "clustering_local": 0.833,
+    "clustering_global": 0.1,
+    "delta": 0.734,
+    "clustering_esperado_nulo": 0.049,
+    "baseline": "modelo de configuracion (misma secuencia de grados)"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "densidad_local-5",
+   "tipo": "densidad_local",
+   "capa": "candidato",
+   "titulo": "'camino': regimen de conectividad local denso",
+   "elementos": {
+    "terminos": [
+     "camino"
+    ]
+   },
+   "evidencia": {
+    "clustering_local": 0.7,
+    "clustering_global": 0.1,
+    "delta": 0.6,
+    "clustering_esperado_nulo": 0.049,
+    "baseline": "modelo de configuracion (misma secuencia de grados)"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "densidad_local-6",
+   "tipo": "densidad_local",
+   "capa": "candidato",
+   "titulo": "'rama': regimen de conectividad local denso",
+   "elementos": {
+    "terminos": [
+     "rama"
+    ]
+   },
+   "evidencia": {
+    "clustering_local": 0.667,
+    "clustering_global": 0.1,
+    "delta": 0.567,
+    "clustering_esperado_nulo": 0.049,
+    "baseline": "modelo de configuracion (misma secuencia de grados)"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "densidad_local-7",
+   "tipo": "densidad_local",
+   "capa": "candidato",
+   "titulo": "'termina': regimen de conectividad local denso",
+   "elementos": {
+    "terminos": [
+     "termina"
+    ]
+   },
+   "evidencia": {
+    "clustering_local": 0.667,
+    "clustering_global": 0.1,
+    "delta": 0.567,
+    "clustering_esperado_nulo": 0.049,
+    "baseline": "modelo de configuracion (misma secuencia de grados)"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "densidad_local-8",
+   "tipo": "densidad_local",
+   "capa": "candidato",
+   "titulo": "'nodo': regimen de conectividad local denso",
+   "elementos": {
+    "terminos": [
+     "nodo"
+    ]
+   },
+   "evidencia": {
+    "clustering_local": 0.5,
+    "clustering_global": 0.1,
+    "delta": 0.4,
+    "clustering_esperado_nulo": 0.049,
+    "baseline": "modelo de configuracion (misma secuencia de grados)"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "motivo_recurrencia-1",
+   "tipo": "motivo_recurrencia",
+   "capa": "candidato",
+   "titulo": "triangulos observados cruzan comunidades (9)",
+   "elementos": {
+    "terminos": []
+   },
+   "evidencia": {
+    "triangulos_totales": 15,
+    "triangulos_multicomunidad": 9,
+    "nota": "configuracion repetida en regiones separadas: descriptivo"
+   },
+   "origen": {
+    "algoritmo": "cartografia.candidatos.descubrir",
+    "parametros": {
+     "puente_intermediacion_frac": 0.5,
+     "puente_grado_frac": 0.3,
+     "arista_puente_frac": 0.5,
+     "isla_max": 8,
+     "densidad_local_delta": 0.4,
+     "nulo_max_nodos": 800,
+     "nulo_seed": 0,
+     "top_k": 10,
+     "traza_fuerza_min": 2,
+     "top_candidatos": 60
+    },
+    "capa_grafo": "observada"
+   }
+  }
+ ]
+}

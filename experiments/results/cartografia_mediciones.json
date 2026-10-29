@@ -1,0 +1,767 @@
+{
+ "capa": "medicion",
+ "global": {
+  "terminos": 79,
+  "nodos_navegacion": 276,
+  "relaciones_observadas": 30,
+  "aristas_navegacion": 419,
+  "aristas_activacion": 217,
+  "eventos_log": 461,
+  "fuerza_total_observada": 36,
+  "componentes_conceptos": [
+   17,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1
+  ],
+  "n_componentes": 63,
+  "fraccion_componente_gigante": 0.21518987341772153,
+  "densidad_observada": 0.009737098344693282,
+  "densidad_navegacion": 0.011040843214756258,
+  "diametro_componente_gigante": 6,
+  "metodo_diametro": "exacto",
+  "longitud_camino_promedio_gigante": 2.5808823529411766,
+  "modularidad": 0.3236882716049383
+ },
+ "distribuciones": {
+  "grado_medio_observado": 0.759493670886076,
+  "grado_max_observado": 8,
+  "gini_grado_observado": 0.8481012658227847,
+  "gini_peso_burbujas": 0.3306839368069865,
+  "histograma_grado": {
+   "0": 62,
+   "1": 2,
+   "2": 5,
+   "3": 2,
+   "4": 2,
+   "5": 4,
+   "6": 1,
+   "8": 1
+  }
+ },
+ "local": {
+  "top_grado": [
+   [
+    "hoja",
+    8
+   ],
+   [
+    "raiz",
+    6
+   ],
+   [
+    "grafo",
+    5
+   ],
+   [
+    "savia",
+    5
+   ],
+   [
+    "camino",
+    5
+   ],
+   [
+    "nodo",
+    5
+   ],
+   [
+    "arista",
+    4
+   ],
+   [
+    "ramas",
+    4
+   ],
+   [
+    "rama",
+    3
+   ],
+   [
+    "termina",
+    3
+   ]
+  ],
+  "top_grado_ponderado": [
+   [
+    "hoja",
+    11
+   ],
+   [
+    "raiz",
+    9
+   ],
+   [
+    "grafo",
+    7
+   ],
+   [
+    "savia",
+    6
+   ],
+   [
+    "camino",
+    6
+   ],
+   [
+    "nodo",
+    6
+   ],
+   [
+    "arista",
+    4
+   ],
+   [
+    "ramas",
+    4
+   ],
+   [
+    "arbol",
+    3
+   ],
+   [
+    "rama",
+    3
+   ]
+  ],
+  "top_intermediacion_nodos": [
+   [
+    "savia",
+    0.016150516150516152
+   ],
+   [
+    "raiz",
+    0.015379065379065377
+   ],
+   [
+    "hoja",
+    0.010983460983460983
+   ],
+   [
+    "grafo",
+    0.010794760794760796
+   ],
+   [
+    "ramas",
+    0.005161505161505162
+   ],
+   [
+    "conecta",
+    0.004995004995004995
+   ],
+   [
+    "rama",
+    0.003385503385503386
+   ],
+   [
+    "nodo",
+    0.002314352314352314
+   ],
+   [
+    "camino",
+    0.0011988011988011988
+   ],
+   [
+    "arbol",
+    0.0004495504495504496
+   ]
+  ],
+  "top_intermediacion_aristas": [
+   [
+    [
+     "raiz",
+     "savia"
+    ],
+    0.014551552526236071
+   ],
+   [
+    [
+     "grafo",
+     "conecta"
+    ],
+    0.00973709834469328
+   ],
+   [
+    [
+     "grafo",
+     "raiz"
+    ],
+    0.00868765552309856
+   ],
+   [
+    [
+     "savia",
+     "ramas"
+    ],
+    0.008438818565400843
+   ],
+   [
+    [
+     "hoja",
+     "rama"
+    ],
+    0.005247214107973601
+   ],
+   [
+    [
+     "ramas",
+     "copa"
+    ],
+    0.00519311911716975
+   ],
+   [
+    [
+     "conecta",
+     "nodos"
+    ],
+    0.00519311911716975
+   ],
+   [
+    [
+     "hoja",
+     "raiz"
+    ],
+    0.004955101157632803
+   ],
+   [
+    [
+     "savia",
+     "rama"
+    ],
+    0.004922644163150492
+   ],
+   [
+    [
+     "hoja",
+     "expansion"
+    ],
+    0.0045115222330412205
+   ]
+  ],
+  "clustering_promedio": 0.09981916817359855,
+  "triangulos_totales": 15
+ },
+ "comunidades": [
+  {
+   "id": 0,
+   "tamano": 6,
+   "terminos": [
+    "copa",
+    "rama",
+    "ramas",
+    "savia",
+    "sostiene",
+    "tallo"
+   ]
+  },
+  {
+   "id": 1,
+   "tamano": 5,
+   "terminos": [
+    "arbol",
+    "expansion",
+    "hoja",
+    "nodo",
+    "termina"
+   ]
+  },
+  {
+   "id": 2,
+   "tamano": 4,
+   "terminos": [
+    "arista",
+    "camino",
+    "grafo",
+    "raiz"
+   ]
+  },
+  {
+   "id": 3,
+   "tamano": 2,
+   "terminos": [
+    "conecta",
+    "nodos"
+   ]
+  },
+  {
+   "id": 4,
+   "tamano": 1,
+   "terminos": [
+    "crece"
+   ]
+  },
+  {
+   "id": 5,
+   "tamano": 1,
+   "terminos": [
+    "divide"
+   ]
+  },
+  {
+   "id": 6,
+   "tamano": 1,
+   "terminos": [
+    "absorbe"
+   ]
+  },
+  {
+   "id": 7,
+   "tamano": 1,
+   "terminos": [
+    "agua"
+   ]
+  },
+  {
+   "id": 8,
+   "tamano": 1,
+   "terminos": [
+    "hojas"
+   ]
+  },
+  {
+   "id": 9,
+   "tamano": 1,
+   "terminos": [
+    "verdes"
+   ]
+  },
+  {
+   "id": 10,
+   "tamano": 1,
+   "terminos": [
+    "captura"
+   ]
+  },
+  {
+   "id": 11,
+   "tamano": 1,
+   "terminos": [
+    "luz"
+   ]
+  },
+  {
+   "id": 12,
+   "tamano": 1,
+   "terminos": [
+    "produce"
+   ]
+  },
+  {
+   "id": 13,
+   "tamano": 1,
+   "terminos": [
+    "circula"
+   ]
+  },
+  {
+   "id": 14,
+   "tamano": 1,
+   "terminos": [
+    "semilla"
+   ]
+  },
+  {
+   "id": 15,
+   "tamano": 1,
+   "terminos": [
+    "germina"
+   ]
+  },
+  {
+   "id": 16,
+   "tamano": 1,
+   "terminos": [
+    "brota"
+   ]
+  },
+  {
+   "id": 17,
+   "tamano": 1,
+   "terminos": [
+    "nueva"
+   ]
+  },
+  {
+   "id": 18,
+   "tamano": 1,
+   "terminos": [
+    "flor"
+   ]
+  },
+  {
+   "id": 19,
+   "tamano": 1,
+   "terminos": [
+    "convierte"
+   ]
+  },
+  {
+   "id": 20,
+   "tamano": 1,
+   "terminos": [
+    "fruto"
+   ]
+  },
+  {
+   "id": 21,
+   "tamano": 1,
+   "terminos": [
+    "semillas"
+   ]
+  },
+  {
+   "id": 22,
+   "tamano": 1,
+   "terminos": [
+    "transporta"
+   ]
+  },
+  {
+   "id": 23,
+   "tamano": 1,
+   "terminos": [
+    "conjunto"
+   ]
+  },
+  {
+   "id": 24,
+   "tamano": 1,
+   "terminos": [
+    "altas"
+   ]
+  },
+  {
+   "id": 25,
+   "tamano": 1,
+   "terminos": [
+    "compone"
+   ]
+  },
+  {
+   "id": 26,
+   "tamano": 1,
+   "terminos": [
+    "unidos"
+   ]
+  },
+  {
+   "id": 27,
+   "tamano": 1,
+   "terminos": [
+    "aristas"
+   ]
+  },
+  {
+   "id": 28,
+   "tamano": 1,
+   "terminos": [
+    "caminos"
+   ]
+  },
+  {
+   "id": 29,
+   "tamano": 1,
+   "terminos": [
+    "recorre"
+   ]
+  },
+  {
+   "id": 30,
+   "tamano": 1,
+   "terminos": [
+    "consecutivos"
+   ]
+  },
+  {
+   "id": 31,
+   "tamano": 1,
+   "terminos": [
+    "sus"
+   ]
+  },
+  {
+   "id": 32,
+   "tamano": 1,
+   "terminos": [
+    "subgrafo"
+   ]
+  },
+  {
+   "id": 33,
+   "tamano": 1,
+   "terminos": [
+    "inducido"
+   ]
+  },
+  {
+   "id": 34,
+   "tamano": 1,
+   "terminos": [
+    "conserva"
+   ]
+  },
+  {
+   "id": 35,
+   "tamano": 1,
+   "terminos": [
+    "recorrido"
+   ]
+  },
+  {
+   "id": 36,
+   "tamano": 1,
+   "terminos": [
+    "profundidad"
+   ]
+  },
+  {
+   "id": 37,
+   "tamano": 1,
+   "terminos": [
+    "visita"
+   ]
+  },
+  {
+   "id": 38,
+   "tamano": 1,
+   "terminos": [
+    "dos"
+   ]
+  },
+  {
+   "id": 39,
+   "tamano": 1,
+   "terminos": [
+    "conexo"
+   ]
+  },
+  {
+   "id": 40,
+   "tamano": 1,
+   "terminos": [
+    "cualquier"
+   ]
+  },
+  {
+   "id": 41,
+   "tamano": 1,
+   "terminos": [
+    "par"
+   ]
+  },
+  {
+   "id": 42,
+   "tamano": 1,
+   "terminos": [
+    "nutrientes"
+   ]
+  },
+  {
+   "id": 43,
+   "tamano": 1,
+   "terminos": [
+    "fluyen"
+   ]
+  },
+  {
+   "id": 44,
+   "tamano": 1,
+   "terminos": [
+    "base"
+   ]
+  },
+  {
+   "id": 45,
+   "tamano": 1,
+   "terminos": [
+    "brotes"
+   ]
+  },
+  {
+   "id": 46,
+   "tamano": 1,
+   "terminos": [
+    "planta"
+   ]
+  },
+  {
+   "id": 47,
+   "tamano": 1,
+   "terminos": [
+    "recursos"
+   ]
+  },
+  {
+   "id": 48,
+   "tamano": 1,
+   "terminos": [
+    "origen"
+   ]
+  },
+  {
+   "id": 49,
+   "tamano": 1,
+   "terminos": [
+    "destinos"
+   ]
+  },
+  {
+   "id": 50,
+   "tamano": 1,
+   "terminos": [
+    "red"
+   ]
+  },
+  {
+   "id": 51,
+   "tamano": 1,
+   "terminos": [
+    "pronostico"
+   ]
+  },
+  {
+   "id": 52,
+   "tamano": 1,
+   "terminos": [
+    "anuncia"
+   ]
+  },
+  {
+   "id": 53,
+   "tamano": 1,
+   "terminos": [
+    "lluvias"
+   ]
+  },
+  {
+   "id": 54,
+   "tamano": 1,
+   "terminos": [
+    "viento"
+   ]
+  },
+  {
+   "id": 55,
+   "tamano": 1,
+   "terminos": [
+    "fin"
+   ]
+  },
+  {
+   "id": 56,
+   "tamano": 1,
+   "terminos": [
+    "semana"
+   ]
+  },
+  {
+   "id": 57,
+   "tamano": 1,
+   "terminos": [
+    "sopa"
+   ]
+  },
+  {
+   "id": 58,
+   "tamano": 1,
+   "terminos": [
+    "verduras"
+   ]
+  },
+  {
+   "id": 59,
+   "tamano": 1,
+   "terminos": [
+    "cocina"
+   ]
+  },
+  {
+   "id": 60,
+   "tamano": 1,
+   "terminos": [
+    "fuego"
+   ]
+  },
+  {
+   "id": 61,
+   "tamano": 1,
+   "terminos": [
+    "lento"
+   ]
+  },
+  {
+   "id": 62,
+   "tamano": 1,
+   "terminos": [
+    "sal"
+   ]
+  },
+  {
+   "id": 63,
+   "tamano": 1,
+   "terminos": [
+    "botanico"
+   ]
+  },
+  {
+   "id": 64,
+   "tamano": 1,
+   "terminos": [
+    "ramifican"
+   ]
+  },
+  {
+   "id": 65,
+   "tamano": 1,
+   "terminos": [
+    "igual"
+   ]
+  }
+ ]
+}
