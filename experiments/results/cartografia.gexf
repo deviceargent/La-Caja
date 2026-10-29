@@ -1,0 +1,2198 @@
+<?xml version='1.0' encoding='utf-8'?>
+<gexf xmlns="http://www.gexf.net/1.2draft" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd" version="1.2">
+  <meta lastmodifieddate="2026-10-28">
+    <creator>NetworkX 3.7</creator>
+  </meta>
+  <graph defaultedgetype="undirected" mode="static" name="">
+    <attributes mode="static" class="edge">
+      <attribute id="4" title="tipo" type="string" />
+      <attribute id="5" title="peso" type="double" />
+      <attribute id="6" title="refuerzos" type="long" />
+      <attribute id="7" title="ultimo_evento" type="long" />
+    </attributes>
+    <attributes mode="static" class="node">
+      <attribute id="0" title="peso" type="double" />
+      <attribute id="1" title="nivel" type="long" />
+      <attribute id="2" title="membresias" type="long" />
+      <attribute id="3" title="ultimo_evento" type="long" />
+    </attributes>
+    <nodes>
+      <node id="arbol" label="arbol">
+        <attvalues>
+          <attvalue for="0" value="11.0" />
+          <attvalue for="1" value="3" />
+          <attvalue for="2" value="31" />
+          <attvalue for="3" value="441" />
+        </attvalues>
+      </node>
+      <node id="crece" label="crece">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="4" />
+          <attvalue for="3" value="3" />
+        </attvalues>
+      </node>
+      <node id="raiz" label="raiz">
+        <attvalues>
+          <attvalue for="0" value="8.0" />
+          <attvalue for="1" value="2" />
+          <attvalue for="2" value="21" />
+          <attvalue for="3" value="440" />
+        </attvalues>
+      </node>
+      <node id="divide" label="divide">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="7" />
+        </attvalues>
+      </node>
+      <node id="ramas" label="ramas">
+        <attvalues>
+          <attvalue for="0" value="3.0" />
+          <attvalue for="1" value="2" />
+          <attvalue for="2" value="8" />
+          <attvalue for="3" value="161" />
+        </attvalues>
+      </node>
+      <node id="absorbe" label="absorbe">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="6" />
+          <attvalue for="3" value="22" />
+        </attvalues>
+      </node>
+      <node id="agua" label="agua">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="6" />
+          <attvalue for="3" value="24" />
+        </attvalues>
+      </node>
+      <node id="sostiene" label="sostiene">
+        <attvalues>
+          <attvalue for="0" value="2.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="7" />
+          <attvalue for="3" value="143" />
+        </attvalues>
+      </node>
+      <node id="tallo" label="tallo">
+        <attvalues>
+          <attvalue for="0" value="2.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="7" />
+          <attvalue for="3" value="142" />
+        </attvalues>
+      </node>
+      <node id="rama" label="rama">
+        <attvalues>
+          <attvalue for="0" value="2.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="174" />
+        </attvalues>
+      </node>
+      <node id="termina" label="termina">
+        <attvalues>
+          <attvalue for="0" value="2.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="230" />
+        </attvalues>
+      </node>
+      <node id="hojas" label="hojas">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="50" />
+        </attvalues>
+      </node>
+      <node id="verdes" label="verdes">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="52" />
+        </attvalues>
+      </node>
+      <node id="hoja" label="hoja">
+        <attvalues>
+          <attvalue for="0" value="4.0" />
+          <attvalue for="1" value="2" />
+          <attvalue for="2" value="4" />
+          <attvalue for="3" value="336" />
+        </attvalues>
+      </node>
+      <node id="captura" label="captura">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="66" />
+        </attvalues>
+      </node>
+      <node id="luz" label="luz">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="6" />
+          <attvalue for="3" value="68" />
+        </attvalues>
+      </node>
+      <node id="produce" label="produce">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="6" />
+          <attvalue for="3" value="70" />
+        </attvalues>
+      </node>
+      <node id="savia" label="savia">
+        <attvalues>
+          <attvalue for="0" value="4.0" />
+          <attvalue for="1" value="2" />
+          <attvalue for="2" value="9" />
+          <attvalue for="3" value="176" />
+        </attvalues>
+      </node>
+      <node id="circula" label="circula">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="90" />
+        </attvalues>
+      </node>
+      <node id="copa" label="copa">
+        <attvalues>
+          <attvalue for="0" value="2.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="7" />
+          <attvalue for="3" value="157" />
+        </attvalues>
+      </node>
+      <node id="semilla" label="semilla">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="4" />
+          <attvalue for="3" value="104" />
+        </attvalues>
+      </node>
+      <node id="germina" label="germina">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="4" />
+          <attvalue for="3" value="106" />
+        </attvalues>
+      </node>
+      <node id="brota" label="brota">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="108" />
+        </attvalues>
+      </node>
+      <node id="nueva" label="nueva">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="111" />
+        </attvalues>
+      </node>
+      <node id="flor" label="flor">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="123" />
+        </attvalues>
+      </node>
+      <node id="convierte" label="convierte">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="126" />
+        </attvalues>
+      </node>
+      <node id="fruto" label="fruto">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="128" />
+        </attvalues>
+      </node>
+      <node id="semillas" label="semillas">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="130" />
+        </attvalues>
+      </node>
+      <node id="transporta" label="transporta">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="145" />
+        </attvalues>
+      </node>
+      <node id="conjunto" label="conjunto">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="159" />
+        </attvalues>
+      </node>
+      <node id="altas" label="altas">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="162" />
+        </attvalues>
+      </node>
+      <node id="grafo" label="grafo">
+        <attvalues>
+          <attvalue for="0" value="5.0" />
+          <attvalue for="1" value="2" />
+          <attvalue for="2" value="12" />
+          <attvalue for="3" value="444" />
+        </attvalues>
+      </node>
+      <node id="compone" label="compone">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="4" />
+          <attvalue for="3" value="185" />
+        </attvalues>
+      </node>
+      <node id="nodos" label="nodos">
+        <attvalues>
+          <attvalue for="0" value="5.0" />
+          <attvalue for="1" value="2" />
+          <attvalue for="2" value="17" />
+          <attvalue for="3" value="317" />
+        </attvalues>
+      </node>
+      <node id="unidos" label="unidos">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="189" />
+        </attvalues>
+      </node>
+      <node id="aristas" label="aristas">
+        <attvalues>
+          <attvalue for="0" value="3.0" />
+          <attvalue for="1" value="2" />
+          <attvalue for="2" value="10" />
+          <attvalue for="3" value="268" />
+        </attvalues>
+      </node>
+      <node id="nodo" label="nodo">
+        <attvalues>
+          <attvalue for="0" value="4.0" />
+          <attvalue for="1" value="2" />
+          <attvalue for="2" value="8" />
+          <attvalue for="3" value="332" />
+        </attvalues>
+      </node>
+      <node id="expansion" label="expansion">
+        <attvalues>
+          <attvalue for="0" value="2.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="6" />
+          <attvalue for="3" value="228" />
+        </attvalues>
+      </node>
+      <node id="conecta" label="conecta">
+        <attvalues>
+          <attvalue for="0" value="2.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="8" />
+          <attvalue for="3" value="295" />
+        </attvalues>
+      </node>
+      <node id="caminos" label="caminos">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="211" />
+        </attvalues>
+      </node>
+      <node id="camino" label="camino">
+        <attvalues>
+          <attvalue for="0" value="3.0" />
+          <attvalue for="1" value="2" />
+          <attvalue for="2" value="7" />
+          <attvalue for="3" value="334" />
+        </attvalues>
+      </node>
+      <node id="recorre" label="recorre">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="239" />
+        </attvalues>
+      </node>
+      <node id="consecutivos" label="consecutivos">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="6" />
+          <attvalue for="3" value="242" />
+        </attvalues>
+      </node>
+      <node id="sus" label="sus">
+        <attvalues>
+          <attvalue for="0" value="2.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="9" />
+          <attvalue for="3" value="267" />
+        </attvalues>
+      </node>
+      <node id="subgrafo" label="subgrafo">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="4" />
+          <attvalue for="3" value="260" />
+        </attvalues>
+      </node>
+      <node id="inducido" label="inducido">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="262" />
+        </attvalues>
+      </node>
+      <node id="conserva" label="conserva">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="6" />
+          <attvalue for="3" value="264" />
+        </attvalues>
+      </node>
+      <node id="recorrido" label="recorrido">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="3" />
+          <attvalue for="3" value="280" />
+        </attvalues>
+      </node>
+      <node id="profundidad" label="profundidad">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="3" />
+          <attvalue for="3" value="282" />
+        </attvalues>
+      </node>
+      <node id="visita" label="visita">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="4" />
+          <attvalue for="3" value="284" />
+        </attvalues>
+      </node>
+      <node id="arista" label="arista">
+        <attvalues>
+          <attvalue for="0" value="2.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="333" />
+        </attvalues>
+      </node>
+      <node id="dos" label="dos">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="296" />
+        </attvalues>
+      </node>
+      <node id="conexo" label="conexo">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="6" />
+          <attvalue for="3" value="310" />
+        </attvalues>
+      </node>
+      <node id="cualquier" label="cualquier">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="6" />
+          <attvalue for="3" value="313" />
+        </attvalues>
+      </node>
+      <node id="par" label="par">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="6" />
+          <attvalue for="3" value="315" />
+        </attvalues>
+      </node>
+      <node id="nutrientes" label="nutrientes">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="4" />
+          <attvalue for="3" value="349" />
+        </attvalues>
+      </node>
+      <node id="fluyen" label="fluyen">
+        <attvalues>
+          <attvalue for="0" value="2.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="8" />
+          <attvalue for="3" value="371" />
+        </attvalues>
+      </node>
+      <node id="base" label="base">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="353" />
+        </attvalues>
+      </node>
+      <node id="brotes" label="brotes">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="355" />
+        </attvalues>
+      </node>
+      <node id="planta" label="planta">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="357" />
+        </attvalues>
+      </node>
+      <node id="recursos" label="recursos">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="369" />
+        </attvalues>
+      </node>
+      <node id="origen" label="origen">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="372" />
+        </attvalues>
+      </node>
+      <node id="destinos" label="destinos">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="374" />
+        </attvalues>
+      </node>
+      <node id="red" label="red">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="376" />
+        </attvalues>
+      </node>
+      <node id="pronostico" label="pronostico">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="4" />
+          <attvalue for="3" value="388" />
+        </attvalues>
+      </node>
+      <node id="anuncia" label="anuncia">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="390" />
+        </attvalues>
+      </node>
+      <node id="lluvias" label="lluvias">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="6" />
+          <attvalue for="3" value="392" />
+        </attvalues>
+      </node>
+      <node id="viento" label="viento">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="6" />
+          <attvalue for="3" value="394" />
+        </attvalues>
+      </node>
+      <node id="fin" label="fin">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="6" />
+          <attvalue for="3" value="396" />
+        </attvalues>
+      </node>
+      <node id="semana" label="semana">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="398" />
+        </attvalues>
+      </node>
+      <node id="sopa" label="sopa">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="4" />
+          <attvalue for="3" value="414" />
+        </attvalues>
+      </node>
+      <node id="verduras" label="verduras">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="416" />
+        </attvalues>
+      </node>
+      <node id="cocina" label="cocina">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="6" />
+          <attvalue for="3" value="418" />
+        </attvalues>
+      </node>
+      <node id="fuego" label="fuego">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="6" />
+          <attvalue for="3" value="420" />
+        </attvalues>
+      </node>
+      <node id="lento" label="lento">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="6" />
+          <attvalue for="3" value="422" />
+        </attvalues>
+      </node>
+      <node id="sal" label="sal">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="424" />
+        </attvalues>
+      </node>
+      <node id="botanico" label="botanico">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="6" />
+          <attvalue for="3" value="442" />
+        </attvalues>
+      </node>
+      <node id="ramifican" label="ramifican">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="6" />
+          <attvalue for="3" value="445" />
+        </attvalues>
+      </node>
+      <node id="igual" label="igual">
+        <attvalues>
+          <attvalue for="0" value="1.0" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="447" />
+        </attvalues>
+      </node>
+    </nodes>
+    <edges>
+      <edge source="arbol" target="hoja" id="0">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="2.0" />
+          <attvalue for="6" value="2" />
+          <attvalue for="7" value="231" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="grafo" id="1">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="452" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="altas" id="2">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="conecta" id="3">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="caminos" id="4">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="ramas" id="5">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="flor" id="6">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="absorbe" id="7">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="produce" id="8">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="verdes" id="9">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="crece" id="10">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="savia" id="11">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="copa" id="12">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="circula" id="13">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="captura" id="14">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="conjunto" id="15">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="sostiene" id="16">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="botanico" id="17">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="expansion" id="18">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="raiz" id="19">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="hojas" id="20">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="luz" id="21">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="fruto" id="22">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="rama" id="23">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="semillas" id="24">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="termina" id="25">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="divide" id="26">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="ramifican" id="27">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="tallo" id="28">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="nodo" id="29">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="convierte" id="30">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="igual" id="31">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arbol" target="agua" id="32">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="crece" target="divide" id="33">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="crece" target="raiz" id="34">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="crece" target="ramas" id="35">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="savia" id="36">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="2.0" />
+          <attvalue for="6" value="2" />
+          <attvalue for="7" value="181" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="rama" id="37">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="177" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="hoja" id="38">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="2.0" />
+          <attvalue for="6" value="2" />
+          <attvalue for="7" value="348" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="grafo" id="39">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="2.0" />
+          <attvalue for="6" value="2" />
+          <attvalue for="7" value="451" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="arista" id="40">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="343" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="camino" id="41">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="344" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="ramas" id="42">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="sostiene" id="43">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="agua" id="44">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="tallo" id="45">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="nodo" id="46">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="absorbe" id="47">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="caminos" id="48">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="brota" id="49">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="nueva" id="50">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="germina" id="51">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="conecta" id="52">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="botanico" id="53">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="circula" id="54">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="copa" id="55">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="divide" id="56">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="semilla" id="57">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="ramifican" id="58">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="raiz" target="expansion" id="59">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="divide" target="ramas" id="60">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="ramas" target="tallo" id="61">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="148" />
+        </attvalues>
+      </edge>
+      <edge source="ramas" target="sostiene" id="62">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="149" />
+        </attvalues>
+      </edge>
+      <edge source="ramas" target="savia" id="63">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="155" />
+        </attvalues>
+      </edge>
+      <edge source="ramas" target="copa" id="64">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="166" />
+        </attvalues>
+      </edge>
+      <edge source="ramas" target="altas" id="65">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="ramas" target="transporta" id="66">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="ramas" target="conjunto" id="67">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="absorbe" target="tallo" id="68">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="absorbe" target="agua" id="69">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="absorbe" target="sostiene" id="70">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="agua" target="sostiene" id="71">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="agua" target="tallo" id="72">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="sostiene" target="savia" id="73">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="154" />
+        </attvalues>
+      </edge>
+      <edge source="sostiene" target="transporta" id="74">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="sostiene" target="tallo" id="75">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="tallo" target="savia" id="76">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="153" />
+        </attvalues>
+      </edge>
+      <edge source="tallo" target="transporta" id="77">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="rama" target="hoja" id="78">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="180" />
+        </attvalues>
+      </edge>
+      <edge source="rama" target="savia" id="79">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="182" />
+        </attvalues>
+      </edge>
+      <edge source="rama" target="termina" id="80">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="rama" target="hojas" id="81">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="rama" target="verdes" id="82">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="termina" target="hoja" id="83">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="234" />
+        </attvalues>
+      </edge>
+      <edge source="termina" target="expansion" id="84">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="235" />
+        </attvalues>
+      </edge>
+      <edge source="termina" target="nodo" id="85">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="236" />
+        </attvalues>
+      </edge>
+      <edge source="termina" target="hojas" id="86">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="termina" target="verdes" id="87">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="hojas" target="verdes" id="88">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="hoja" target="expansion" id="89">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="232" />
+        </attvalues>
+      </edge>
+      <edge source="hoja" target="nodo" id="90">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="2.0" />
+          <attvalue for="6" value="2" />
+          <attvalue for="7" value="345" />
+        </attvalues>
+      </edge>
+      <edge source="hoja" target="arista" id="91">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="346" />
+        </attvalues>
+      </edge>
+      <edge source="hoja" target="camino" id="92">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="347" />
+        </attvalues>
+      </edge>
+      <edge source="hoja" target="savia" id="93">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="hoja" target="luz" id="94">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="hoja" target="produce" id="95">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="hoja" target="captura" id="96">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="captura" target="luz" id="97">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="captura" target="produce" id="98">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="captura" target="savia" id="99">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="luz" target="savia" id="100">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="luz" target="produce" id="101">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="produce" target="savia" id="102">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="savia" target="copa" id="103">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="savia" target="circula" id="104">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="savia" target="transporta" id="105">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="circula" target="copa" id="106">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="copa" target="conjunto" id="107">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="copa" target="altas" id="108">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="semilla" target="germina" id="109">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="semilla" target="brota" id="110">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="semilla" target="nueva" id="111">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="germina" target="nueva" id="112">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="germina" target="brota" id="113">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="brota" target="nueva" id="114">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="flor" target="fruto" id="115">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="flor" target="convierte" id="116">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="flor" target="semillas" id="117">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="convierte" target="fruto" id="118">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="convierte" target="semillas" id="119">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="fruto" target="semillas" id="120">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="conjunto" target="altas" id="121">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="grafo" target="conecta" id="122">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="307" />
+        </attvalues>
+      </edge>
+      <edge source="grafo" target="camino" id="123">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="2.0" />
+          <attvalue for="6" value="2" />
+          <attvalue for="7" value="339" />
+        </attvalues>
+      </edge>
+      <edge source="grafo" target="nodo" id="124">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="337" />
+        </attvalues>
+      </edge>
+      <edge source="grafo" target="conexo" id="125">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="grafo" target="igual" id="126">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="grafo" target="aristas" id="127">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="grafo" target="unidos" id="128">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="grafo" target="botanico" id="129">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="grafo" target="nodos" id="130">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="grafo" target="par" id="131">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="grafo" target="compone" id="132">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="grafo" target="ramifican" id="133">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="grafo" target="dos" id="134">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="grafo" target="cualquier" id="135">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="grafo" target="arista" id="136">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="compone" target="unidos" id="137">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="compone" target="aristas" id="138">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="compone" target="nodos" id="139">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nodos" target="conecta" id="140">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="304" />
+        </attvalues>
+      </edge>
+      <edge source="nodos" target="sus" id="141">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nodos" target="conexo" id="142">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nodos" target="cualquier" id="143">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nodos" target="inducido" id="144">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nodos" target="recorre" id="145">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nodos" target="conserva" id="146">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nodos" target="consecutivos" id="147">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nodos" target="aristas" id="148">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nodos" target="camino" id="149">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nodos" target="arista" id="150">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nodos" target="par" id="151">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nodos" target="dos" id="152">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nodos" target="subgrafo" id="153">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nodos" target="unidos" id="154">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="unidos" target="aristas" id="155">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="aristas" target="sus" id="156">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="aristas" target="recorre" id="157">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="aristas" target="inducido" id="158">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="aristas" target="conserva" id="159">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="aristas" target="consecutivos" id="160">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nodo" target="arista" id="161">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="338" />
+        </attvalues>
+      </edge>
+      <edge source="nodo" target="camino" id="162">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="340" />
+        </attvalues>
+      </edge>
+      <edge source="nodo" target="conecta" id="163">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nodo" target="visita" id="164">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nodo" target="recorrido" id="165">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nodo" target="profundidad" id="166">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nodo" target="expansion" id="167">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="expansion" target="caminos" id="168">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="expansion" target="conecta" id="169">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="conecta" target="arista" id="170">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="conecta" target="dos" id="171">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="conecta" target="caminos" id="172">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="camino" target="arista" id="173">
+        <attvalues>
+          <attvalue for="4" value="observada" />
+          <attvalue for="5" value="1.0" />
+          <attvalue for="6" value="1" />
+          <attvalue for="7" value="341" />
+        </attvalues>
+      </edge>
+      <edge source="camino" target="cualquier" id="174">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="camino" target="par" id="175">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="camino" target="sus" id="176">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="camino" target="consecutivos" id="177">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="camino" target="recorre" id="178">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="camino" target="conexo" id="179">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="recorre" target="consecutivos" id="180">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="recorre" target="sus" id="181">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="consecutivos" target="sus" id="182">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="sus" target="inducido" id="183">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="sus" target="conserva" id="184">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="sus" target="subgrafo" id="185">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="subgrafo" target="inducido" id="186">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="subgrafo" target="conserva" id="187">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="inducido" target="conserva" id="188">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="recorrido" target="visita" id="189">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="recorrido" target="profundidad" id="190">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="profundidad" target="visita" id="191">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="arista" target="dos" id="192">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="conexo" target="par" id="193">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="conexo" target="cualquier" id="194">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="cualquier" target="par" id="195">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nutrientes" target="brotes" id="196">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nutrientes" target="planta" id="197">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nutrientes" target="fluyen" id="198">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="nutrientes" target="base" id="199">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="fluyen" target="brotes" id="200">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="fluyen" target="planta" id="201">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="fluyen" target="origen" id="202">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="fluyen" target="destinos" id="203">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="fluyen" target="base" id="204">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="fluyen" target="recursos" id="205">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="fluyen" target="red" id="206">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="base" target="planta" id="207">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="base" target="brotes" id="208">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="brotes" target="planta" id="209">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="recursos" target="destinos" id="210">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="recursos" target="origen" id="211">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="recursos" target="red" id="212">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="origen" target="red" id="213">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="origen" target="destinos" id="214">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="destinos" target="red" id="215">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="pronostico" target="lluvias" id="216">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="pronostico" target="anuncia" id="217">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="pronostico" target="viento" id="218">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="pronostico" target="fin" id="219">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="anuncia" target="lluvias" id="220">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="anuncia" target="fin" id="221">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="anuncia" target="semana" id="222">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="anuncia" target="viento" id="223">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="lluvias" target="viento" id="224">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="lluvias" target="semana" id="225">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="lluvias" target="fin" id="226">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="viento" target="semana" id="227">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="viento" target="fin" id="228">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="fin" target="semana" id="229">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="sopa" target="lento" id="230">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="sopa" target="fuego" id="231">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="sopa" target="verduras" id="232">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="sopa" target="cocina" id="233">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="verduras" target="fuego" id="234">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="verduras" target="sal" id="235">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="verduras" target="lento" id="236">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="verduras" target="cocina" id="237">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="cocina" target="sal" id="238">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="cocina" target="lento" id="239">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="cocina" target="fuego" id="240">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="fuego" target="lento" id="241">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="fuego" target="sal" id="242">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="lento" target="sal" id="243">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="botanico" target="ramifican" id="244">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="botanico" target="igual" id="245">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="ramifican" target="igual" id="246">
+        <attvalues>
+          <attvalue for="4" value="activacion" />
+          <attvalue for="5" value="1.0" />
+        </attvalues>
+      </edge>
+    </edges>
+  </graph>
+</gexf>

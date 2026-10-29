@@ -1,0 +1,182 @@
+{
+ "capa": "comparaciones",
+ "comparaciones": [
+  {
+   "id": "comparacion-1",
+   "tipo": "similitud_estructural",
+   "capa": "candidato",
+   "titulo": "comunidad 0 ~ comunidad 1 (sim 0.76)",
+   "elementos": {
+    "comunidad_a": {
+     "id": 0,
+     "terminos": [
+      "copa",
+      "rama",
+      "ramas",
+      "savia",
+      "sostiene",
+      "tallo"
+     ]
+    },
+    "comunidad_b": {
+     "id": 1,
+     "terminos": [
+      "arbol",
+      "expansion",
+      "hoja",
+      "nodo",
+      "termina"
+     ]
+    }
+   },
+   "evidencia": {
+    "firma_a": {
+     "nodos": 6,
+     "aristas": 7,
+     "densidad": 0.4666666666666667,
+     "clustering": 0.4444444444444444,
+     "diametro": 3,
+     "conexo": true
+    },
+    "firma_b": {
+     "nodos": 5,
+     "aristas": 6,
+     "densidad": 0.6,
+     "clustering": 0.6,
+     "diametro": 2,
+     "conexo": true
+    },
+    "dist_grados": 0.344,
+    "dist_forma": 0.144,
+    "similitud": 0.756,
+    "aristas_entre_regiones": 1,
+    "nota": "similitud estructural: no implica relacion semantica ni crea aristas"
+   },
+   "origen": {
+    "algoritmo": "cartografia.comparacion.comparar_subgrafos",
+    "parametros": {
+     "tamano_minimo": 3,
+     "top": 10
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "comparacion-3",
+   "tipo": "similitud_estructural",
+   "capa": "candidato",
+   "titulo": "comunidad 1 ~ comunidad 2 (sim 0.64)",
+   "elementos": {
+    "comunidad_a": {
+     "id": 1,
+     "terminos": [
+      "arbol",
+      "expansion",
+      "hoja",
+      "nodo",
+      "termina"
+     ]
+    },
+    "comunidad_b": {
+     "id": 2,
+     "terminos": [
+      "arista",
+      "camino",
+      "grafo",
+      "raiz"
+     ]
+    }
+   },
+   "evidencia": {
+    "firma_a": {
+     "nodos": 5,
+     "aristas": 6,
+     "densidad": 0.6,
+     "clustering": 0.6,
+     "diametro": 2,
+     "conexo": true
+    },
+    "firma_b": {
+     "nodos": 4,
+     "aristas": 5,
+     "densidad": 0.8333333333333334,
+     "clustering": 0.8333333333333333,
+     "diametro": 2,
+     "conexo": true
+    },
+    "dist_grados": 0.486,
+    "dist_forma": 0.233,
+    "similitud": 0.64,
+    "aristas_entre_regiones": 7,
+    "nota": "similitud estructural: no implica relacion semantica ni crea aristas"
+   },
+   "origen": {
+    "algoritmo": "cartografia.comparacion.comparar_subgrafos",
+    "parametros": {
+     "tamano_minimo": 3,
+     "top": 10
+    },
+    "capa_grafo": "observada"
+   }
+  },
+  {
+   "id": "comparacion-2",
+   "tipo": "similitud_estructural",
+   "capa": "candidato",
+   "titulo": "comunidad 0 ~ comunidad 2 (sim 0.43)",
+   "elementos": {
+    "comunidad_a": {
+     "id": 0,
+     "terminos": [
+      "copa",
+      "rama",
+      "ramas",
+      "savia",
+      "sostiene",
+      "tallo"
+     ]
+    },
+    "comunidad_b": {
+     "id": 2,
+     "terminos": [
+      "arista",
+      "camino",
+      "grafo",
+      "raiz"
+     ]
+    }
+   },
+   "evidencia": {
+    "firma_a": {
+     "nodos": 6,
+     "aristas": 7,
+     "densidad": 0.4666666666666667,
+     "clustering": 0.4444444444444444,
+     "diametro": 3,
+     "conexo": true
+    },
+    "firma_b": {
+     "nodos": 4,
+     "aristas": 5,
+     "densidad": 0.8333333333333334,
+     "clustering": 0.8333333333333333,
+     "diametro": 2,
+     "conexo": true
+    },
+    "dist_grados": 0.769,
+    "dist_forma": 0.378,
+    "similitud": 0.426,
+    "aristas_entre_regiones": 2,
+    "nota": "similitud estructural: no implica relacion semantica ni crea aristas"
+   },
+   "origen": {
+    "algoritmo": "cartografia.comparacion.comparar_subgrafos",
+    "parametros": {
+     "tamano_minimo": 3,
+     "top": 10
+    },
+    "capa_grafo": "observada"
+   }
+  }
+ ]
+}

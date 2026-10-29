@@ -10,3 +10,4 @@ dist/
 memoria_exp/
 build/
 experiments/results/*_partial.jsonl
+experiments/results/*.db
