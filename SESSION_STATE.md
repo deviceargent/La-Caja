@@ -27,7 +27,7 @@ Trabajo local sin integrar:
 
 ## Siguiente accion
 
-Revisar el diff completo, reconstruir wheel desde el codigo actualizado, instalarlo en un entorno virtual limpio y ejecutar 82 tests. Luego revisar el diff de HTML/GEXF, crear PR y esperar CI antes del merge.
+PR #5 ya esta abierto contra `main` y la rama esta sincronizada con GitHub. Siguiente accion: conseguir una ejecucion de GitHub Actions para el HEAD actual y una revision independiente del diff. No mergear hasta tener ambas verificaciones.
 
 ## Regla de continuidad
 

@@ -9,7 +9,7 @@ La implementacion se organiza en cuatro piezas:
 - **Burbuja**: un termino canonico con peso y marca temporal de ultimo refuerzo.
 - **Nodo**: un contexto de co-ocurrencia que agrupa burbujas. Un termino puede pertenecer a varios nodos.
 - **Piscina**: estado vivo compartido: burbujas, nodos, relaciones observadas, indices de primado y trazas dormidas.
-- **Caja**: procesador transitorio de una consulta. Tokeniza no; recibe terminos ya normalizados, filtra y emite mutaciones hacia la Piscina.
+- **Caja**: procesador transitorio de una consulta. No tokeniza; recibe terminos ya normalizados, filtra y emite mutaciones hacia la Piscina.
 - **LaCaja**: API de alto nivel: tokenizacion, normalizacion, orquestacion y acceso a la Piscina.
 
 La persistencia es una implementacion alternativa de la Piscina: `PiscinaPersistente` agrega event sourcing sobre SQLite. LaCaja elige Piscina en memoria cuando no se pasa `db_path`, y PiscinaPersistente cuando se pasa.
