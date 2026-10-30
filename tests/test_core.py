@@ -1086,6 +1086,7 @@ def test_ids_de_nodo_son_locales_a_cada_piscina():
     assert set(primera.piscina.nodos) == set(segunda.piscina.nodos)
     assert "n1" in primera.piscina.nodos
     assert "n1" in segunda.piscina.nodos
+    assert Nodo._seq == 900
 
     primera.procesar_consulta("alfa epsilon")
     segunda.procesar_consulta("gamma zeta")

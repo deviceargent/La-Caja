@@ -308,11 +308,13 @@ class Nodo:
     """Un contexto de co-ocurrencia. Referencia burbujas (muchos-a-muchos)
     y tiene aristas explicitas hacia otros nodos (navegacion)."""
 
-    _seq = 0
+    _seq = 0  # compatibilidad para instancias Nodo construidas directamente
 
-    def __init__(self):
-        Nodo._seq += 1
-        self.id = f"n{Nodo._seq}"
+    def __init__(self, nid=None):
+        if nid is None:
+            Nodo._seq += 1
+            nid = f"n{Nodo._seq}"
+        self.id = nid
         self.burbujas = set()  # terminos
         self.aristas = set()  # ids de otros nodos (sin transitividad de membresia)
 
@@ -379,9 +381,8 @@ class Piscina:
         return bool(self.nodos_de(a) & self.nodos_de(b))
 
     def _nuevo_nodo(self, *terminos):
-        n = Nodo()
         self._seq += 1
-        n.id = f"n{self._seq}"
+        n = Nodo(f"n{self._seq}")
         for t in terminos:
             n.agregar(t)
             self.burbujas[t].nodos.add(n.id)
@@ -399,9 +400,8 @@ class Piscina:
     def fusionar(self, nodo_ids):
         """Une varios nodos en uno solo (caso nuevo+nuevo)."""
         self._n_eventos += 1
-        nuevo = Nodo()
         self._seq += 1
-        nuevo.id = f"n{self._seq}"
+        nuevo = Nodo(f"n{self._seq}")
         for nid in nodo_ids:
             n = self.nodos[nid]
             for t in n.burbujas:
