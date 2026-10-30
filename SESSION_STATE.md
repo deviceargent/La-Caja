@@ -16,7 +16,7 @@ No asumir que el chat anterior existe. No asumir que una spec antigua describe e
 
 ## Estado de trabajo
 
-Rama: `work/functionalize-core`.
+Rama: `work/functionalize-core`; PR #5: https://github.com/deviceargent/La-Caja/pull/5.
 
 Trabajo local sin integrar:
 - Extra `cartografia` con NetworkX y NumPy.

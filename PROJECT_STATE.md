@@ -64,4 +64,4 @@ La Caja es una biblioteca Python instalable para memoria contextual asociativa, 
 
 ## Proximo hito
 
-Cerrar esta rama con una revision independiente, validar wheel limpio + CI, crear PR y mergear cuando este verde. Luego abordar aislamiento de IDs y configuracion de alias como cambios separados, cada uno con pruebas de regresion.
+Implementacion local validada y publicada en `work/functionalize-core`; PR #5 abierto contra `main`. No hay aun ejecucion de GitHub Actions ni revision independiente registrada. Esperar CI y revision antes del merge. Luego abordar aislamiento de IDs y configuracion de alias como cambios separados, cada uno con pruebas de regresion.
