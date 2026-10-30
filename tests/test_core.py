@@ -8,14 +8,18 @@ absorcion, nunca exilio), refuerzo de peso, ventana secuencial,
 conectividad estricta por aristas explicitas (membresia compartida NO
 conecta), navegacion multi-salto, cajas sin estado y optimizacion.
 """
-from la_caja import LaCaja, Piscina, Caja, Nodo, VENTANA_COOCURRENCIA
 import sqlite3
+
+import pytest
+
+from la_caja import VENTANA_COOCURRENCIA, Caja, LaCaja, Nodo, Piscina
+from la_caja.core import _tokenizar
 
 
 def _reset_id_sequence():
-    """Simula un proceso realmente nuevo: Nodo._seq es una variable de
-    clase, en un proceso fresco arranca en 0."""
-    Nodo._seq = 0
+    """Cada Piscina inicia su secuencia local de IDs en n1.
+    y no requiere reset del contador global de Nodo."""
+
 
 
 def test_brand_new_term_gets_own_unitary_node():
@@ -263,7 +267,7 @@ def test_fission_survives_restart_byte_identical(tmp_path):
     la1.procesar_consulta("masa del sol")
     la1.optimizar(max_membresias=2)
     estado = la1.piscina.a_dict()
-    la1.piscina.db.close()
+    la1.close()
 
     _reset_id_sequence()
     la2 = LaCaja(db_path=db_path)
@@ -281,7 +285,7 @@ def test_replay_reconstructs_identical_state_after_restart(tmp_path):
     la1.declarar_relacion("doom3", "idtech4")
     la1.declarar_relacion("idtech4", "netradiant")
     estado_original = la1.piscina.a_dict()
-    la1.piscina.db.close()
+    la1.close()
 
     _reset_id_sequence()
     la2 = LaCaja(db_path=db_path)
@@ -302,7 +306,7 @@ def test_connectivity_and_weights_survive_restart(tmp_path):
     la1.procesar_consulta("netradiant")
     la1.declarar_relacion("doom3", "idtech4")
     la1.declarar_relacion("idtech4", "netradiant")
-    la1.piscina.db.close()
+    la1.close()
 
     _reset_id_sequence()
     la2 = LaCaja(db_path=db_path)
@@ -324,7 +328,7 @@ def test_replay_determinista_con_piscina_previa_en_el_mismo_proceso(tmp_path):
     la1.procesar_consulta("motor cilindro bujia")
     la1.procesar_consulta("piano escala nota")
     la1.procesar_consulta("motor del piano")
-    la1.piscina.db.close()
+    la1.close()
 
     la2 = LaCaja(db_path=db_path)
     assert la2.consultar("motor", "piano") == 1.0, "la pareja observada se restaura desde el log"
@@ -342,7 +346,7 @@ def test_snapshot_bounds_replay_to_events_after_it(tmp_path):
 
     la1.procesar_consulta("sol luna")
     estado_original = la1.piscina.a_dict()
-    la1.piscina.db.close()
+    la1.close()
 
     verificacion = sqlite3.connect(db_path)
     ultimo_evento_snapshot = verificacion.execute(
@@ -538,7 +542,7 @@ def test_decay_survives_restart_byte_identical(tmp_path):
     la1.procesar_consulta("delta")
     la1.optimizar()
     estado = la1.piscina.a_dict()
-    la1.piscina.db.close()
+    la1.close()
 
     _reset_id_sequence()
     la2 = LaCaja(db_path=db_path)
@@ -775,7 +779,7 @@ def test_olvido_de_relacion_replay_byte_identical(tmp_path):
         la1.procesar_consulta("gamma")
     la1.optimizar()
     estado = la1.piscina.a_dict()
-    la1.piscina.db.close()
+    la1.close()
 
     _reset_id_sequence()
     la2 = LaCaja(db_path=db_path)
@@ -844,7 +848,7 @@ def test_historial_es_inerte(tmp_path):
 
     assert la1.consultar("alfa", "beta") == 0, "la traza no revive la relacion"
     assert "beta" not in la1.contexto_primado("alfa", presupuesto=5)
-    la1.piscina.db.close()
+    la1.close()
 
 
 def test_traza_dormida_replay_byte_identical(tmp_path):
@@ -856,7 +860,7 @@ def test_traza_dormida_replay_byte_identical(tmp_path):
     _olvidar_alfa_beta(la1)
     estado = la1.piscina.a_dict()
     assert estado["trazas"], "el estado serializado incluye la traza"
-    la1.piscina.db.close()
+    la1.close()
 
     _reset_id_sequence()
     la2 = LaCaja(db_path=db_path)
@@ -930,7 +934,7 @@ def test_traza_y_rehidratacion_replay_byte_identical(tmp_path):
     la1.procesar_consulta("alfa beta")  # re-observacion -> refuerzo_historico
     assert la1.piscina.relaciones[("alfa", "beta")]["fuerza"] > 1
     estado = la1.piscina.a_dict()
-    la1.piscina.db.close()
+    la1.close()
 
     _reset_id_sequence()
     la2 = LaCaja(db_path=db_path, rehidratar=True)
@@ -941,8 +945,9 @@ def test_traza_y_rehidratacion_replay_byte_identical(tmp_path):
 # Ingesta por lotes (PiscinaPersistente.lote) y tokenizacion con digitos
 # ---------------------------------------------------------------------------
 
-import pytest
-from la_caja.core import _tokenizar
+
+
+
 
 
 def test_tokenizador_conserva_digitos_internos():
@@ -979,7 +984,7 @@ def test_lote_persiste_y_replaya_igual(tmp_path):
     estado = la1.piscina.a_dict()
     n_eventos = la1.piscina.db.execute(
         "SELECT COUNT(*) FROM eventos").fetchone()[0]
-    la1.piscina.db.close()
+    la1.close()
 
     _reset_id_sequence()
     la2 = LaCaja(db_path=db_path)
@@ -993,11 +998,10 @@ def test_lote_flushea_ante_excepcion(tmp_path):
     db_path = str(tmp_path / "excepcion.db")
     _reset_id_sequence()
     la = LaCaja(db_path=db_path)
-    with pytest.raises(RuntimeError):
-        with la.lote():
-            la.procesar_consulta("alfa beta")
-            raise RuntimeError("corte a mitad de la ingesta")
-    la.piscina.db.close()
+    with pytest.raises(RuntimeError), la.lote():
+        la.procesar_consulta("alfa beta")
+        raise RuntimeError("corte a mitad de la ingesta")
+    la.close()
 
     _reset_id_sequence()
     la2 = LaCaja(db_path=db_path)
@@ -1014,7 +1018,7 @@ def test_lote_anidado_el_externo_manda(tmp_path):
         with la.lote(commit_cada=1):  # interno: no-op
             la.procesar_consulta("tres cuatro")
         la.procesar_consulta("cinco seis")
-    la.piscina.db.close()
+    la.close()
 
     _reset_id_sequence()
     la2 = LaCaja(db_path=db_path)
@@ -1025,3 +1029,85 @@ def test_lote_anidado_el_externo_manda(tmp_path):
 def test_lote_en_piscina_de_memoria_rechazado():
     with pytest.raises(TypeError):
         LaCaja().lote()
+
+def test_persistencia_context_manager_cierra_y_reabre(tmp_path):
+    db_path = str(tmp_path / "piscina.db")
+
+    with LaCaja(db_path=db_path) as la:
+        la.procesar_consulta("gravedad masa energia")
+        estado = la.piscina.a_dict()
+
+    with LaCaja(db_path=db_path) as restaurada:
+        assert restaurada.piscina.a_dict() == estado
+
+
+def test_persistencia_close_es_idempotente_y_bloquea_mutaciones(tmp_path):
+    la = LaCaja(db_path=str(tmp_path / "piscina.db"))
+    la.procesar_consulta("gravedad masa")
+    la.close()
+    la.close()
+
+    with pytest.raises(RuntimeError, match="cerrada"):
+        la.procesar_consulta("zebralogica")
+
+    assert not la.piscina.existe("zebralogica")
+
+
+def test_no_se_puede_cerrar_persistencia_dentro_de_lote(tmp_path):
+    la = LaCaja(db_path=str(tmp_path / "piscina.db"))
+
+    with la.lote():
+        la.procesar_consulta("gravedad masa")
+        with pytest.raises(RuntimeError, match="dentro de lote"):
+            la.close()
+
+    la.close()
+
+
+def test_api_de_lectura_normaliza_aliases_de_terminos():
+    la = LaCaja()
+    la.procesar_consulta("masa solar")
+
+    assert la.consultar("masa", "solar") == 1.0
+    assert "masa" in la.contexto_primado("solar")
+    assert la.nivel("solar") == la.nivel("sol")
+
+
+def test_ids_de_nodo_son_locales_a_cada_piscina():
+    Nodo._seq = 900
+    primera = LaCaja()
+    segunda = LaCaja()
+
+    primera.procesar_consulta("alfa")
+    primera.procesar_consulta("beta")
+    segunda.procesar_consulta("gamma")
+    segunda.procesar_consulta("delta")
+
+    assert set(primera.piscina.nodos) == set(segunda.piscina.nodos)
+    assert "n1" in primera.piscina.nodos
+    assert "n1" in segunda.piscina.nodos
+    assert Nodo._seq == 900
+
+    primera.procesar_consulta("alfa epsilon")
+    segunda.procesar_consulta("gamma zeta")
+
+    assert len(primera.piscina.nodos) == len(set(primera.piscina.nodos))
+    assert len(segunda.piscina.nodos) == len(set(segunda.piscina.nodos))
+
+
+def test_aliases_declarados_son_locales_a_cada_instancia():
+    primera = LaCaja()
+    segunda = LaCaja()
+
+    primera.declarar_sinonimo("Solito", "Sol")
+
+    assert primera.normalizar_termino("SOLITO") == "sol"
+    assert segunda.normalizar_termino("solito") == "solito"
+
+
+def test_filtro_ontologico_vacio_desactiva_el_filtrado():
+    la = LaCaja(filtro_ontologico=set())
+    la.procesar_consulta("el sol")
+
+    assert la.piscina.existe("el")
+    assert la.piscina.existe("sol")
