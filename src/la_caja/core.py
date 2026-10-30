@@ -200,7 +200,6 @@ import sqlite3
 import time
 from collections import deque
 
-
 FILTRO_ONTOLOGICO_DEFAULT = {
     # articulos
     "el", "la", "los", "las", "un", "una", "unos", "unas",
@@ -222,7 +221,7 @@ FILTRO_ONTOLOGICO_DEFAULT = {
     # pronombres personales y reflexivos
     "me", "te", "se", "le", "les", "nos", "os", "lo", "mi", "mí",
     "ti", "él", "ella", "ellos", "ellas", "usted", "ustedes",
-    "nosotros", "vosotros", "ustedes",
+    "nosotros", "vosotros",
     # determinantes demostrativos y cuantificadores
     "este", "estos", "ese", "esa", "eso", "esos", "esas",
     "aquel", "aquella", "aquello", "aquellos", "aquellas",
@@ -236,12 +235,12 @@ FILTRO_ONTOLOGICO_DEFAULT = {
     "vez",
     # nucleo funcional del ingles (corpus mixtos: enron, blog)
     "the", "of", "and", "to", "in", "is", "was", "are", "were",
-    "be", "been", "being", "have", "has", "had", "do", "does",
+    "be", "been", "being", "have", "had", "do", "does",
     "did", "will", "would", "can", "could", "should", "shall",
     "may", "might", "must", "it", "its", "this", "that", "these",
     "those", "there", "here", "as", "at", "by", "for", "from",
     "with", "without", "on", "or", "an", "not", "but", "if",
-    "then", "than", "so", "such", "we", "you", "they", "he",
+    "then", "than", "so", "such", "we", "you", "they",
     "she", "his", "her", "their", "our", "your", "my", "i",
     "into", "about", "over", "under", "again", "also", "just",
     "only", "very", "too", "more", "most", "some", "any", "all",
@@ -338,6 +337,7 @@ class Piscina:
     # fuerza historica de una re-observacion se reduce a la mitad
 
     def __init__(self):
+        self._seq = 0  # secuencia de IDs local a esta piscina
         self.burbujas = {}  # termino -> Burbuja
         self.nodos = {}     # id -> Nodo
         self.relaciones = {}  # par (conceptos) -> {"fuerza", "ultimo_evento"}
@@ -380,6 +380,8 @@ class Piscina:
 
     def _nuevo_nodo(self, *terminos):
         n = Nodo()
+        self._seq += 1
+        n.id = f"n{self._seq}"
         for t in terminos:
             n.agregar(t)
             self.burbujas[t].nodos.add(n.id)
@@ -398,6 +400,8 @@ class Piscina:
         """Une varios nodos en uno solo (caso nuevo+nuevo)."""
         self._n_eventos += 1
         nuevo = Nodo()
+        self._seq += 1
+        nuevo.id = f"n{self._seq}"
         for nid in nodo_ids:
             n = self.nodos[nid]
             for t in n.burbujas:
@@ -763,7 +767,7 @@ class Piscina:
             self.nodos[nid] = n
             if nid.startswith("n") and nid[1:].isdigit():
                 max_seq = max(max_seq, int(nid[1:]))
-        Nodo._seq = max_seq
+        self._seq = max_seq
         self.relaciones = {}
         for fila in data.get("relaciones", []):
             a, b, fuerza, ultimo_evento = fila[:4]
@@ -829,10 +833,33 @@ class PiscinaPersistente(Piscina):
     def __init__(self, db_path, snapshot_cada=1000):
         super().__init__()
         self.db = sqlite3.connect(db_path)
+        self._cerrada = False
         self.snapshot_cada = snapshot_cada
         self._eventos_desde_snapshot = 0
         self._crear_tablas()
         self._cargar()
+
+    def _asegurar_abierta(self):
+        if self._cerrada:
+            raise RuntimeError("La PiscinaPersistente ya esta cerrada")
+
+    def close(self):
+        """Confirma los eventos pendientes y cierra la conexion SQLite."""
+        if self._cerrada:
+            return
+        if getattr(self, "_lote_profundidad", 0) > 0:
+            raise RuntimeError("No se puede cerrar una piscina dentro de lote()")
+        self.db.commit()
+        self.db.close()
+        self._cerrada = True
+
+    def __enter__(self):
+        self._asegurar_abierta()
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        self.close()
+        return False
 
     def _crear_tablas(self):
         self.db.execute("""CREATE TABLE IF NOT EXISTS eventos (
@@ -850,6 +877,7 @@ class PiscinaPersistente(Piscina):
         self.db.commit()
 
     def _registrar(self, metodo, argumentos):
+        self._asegurar_abierta()
         self.db.execute(
             "INSERT INTO eventos (metodo, argumentos, creado_en) VALUES (?, ?, ?)",
             (metodo, json.dumps(argumentos), _ahora()),
@@ -881,60 +909,73 @@ class PiscinaPersistente(Piscina):
         tambien comitea al salir: el estado en memoria ya no puede
         revertirse, y memoria y disco deben quedar sincronizados.
         Anidado, el lote interno es un no-op: manda el mas externo."""
+        self._asegurar_abierta()
         return _Lote(self, commit_cada)
 
     def crear_burbuja(self, termino):
+        self._asegurar_abierta()
         resultado = super().crear_burbuja(termino)
         self._registrar("crear_burbuja", {"termino": termino})
         return resultado
 
     def reforzar(self, termino):
+        self._asegurar_abierta()
         super().reforzar(termino)
         self._registrar("reforzar", {"termino": termino})
 
     def crear_unitario(self, termino):
+        self._asegurar_abierta()
         resultado = super().crear_unitario(termino)
         self._registrar("crear_unitario", {"termino": termino})
         return resultado
 
     def crear_compartido(self, a, b):
+        self._asegurar_abierta()
         resultado = super().crear_compartido(a, b)
         self._registrar("crear_compartido", {"a": a, "b": b})
         return resultado
 
     def fusionar(self, nodo_ids):
+        self._asegurar_abierta()
         nodo_ids = list(nodo_ids)
         resultado = super().fusionar(nodo_ids)
         self._registrar("fusionar", {"nodo_ids": nodo_ids})
         return resultado
 
     def arista_entre(self, a, b):
+        self._asegurar_abierta()
         super().arista_entre(a, b)
         self._registrar("arista_entre", {"a": a, "b": b})
 
     def fisionar_nodo(self, nid):
+        self._asegurar_abierta()
         resultado = super().fisionar_nodo(nid)
         if resultado is not None:
             self._registrar("fisionar_nodo", {"nid": nid})
         return resultado
 
     def fijar_peso(self, termino, peso):
+        self._asegurar_abierta()
         super().fijar_peso(termino, peso)
         self._registrar("fijar_peso", {"termino": termino, "peso": peso})
 
     def fijar_fuerza_relacion(self, a, b, fuerza):
+        self._asegurar_abierta()
         super().fijar_fuerza_relacion(a, b, fuerza)
         self._registrar("fijar_fuerza_relacion", {"a": a, "b": b, "fuerza": fuerza})
 
     def prune_relacion(self, a, b):
+        self._asegurar_abierta()
         super().prune_relacion(a, b)
         self._registrar("prune_relacion", {"a": a, "b": b})
 
     def refuerzo_historico(self, a, b, extra):
+        self._asegurar_abierta()
         super().refuerzo_historico(a, b, extra)
         self._registrar("refuerzo_historico", {"a": a, "b": b, "extra": extra})
 
     def snapshot(self):
+        self._asegurar_abierta()
         ultimo = self.db.execute("SELECT MAX(id) FROM eventos").fetchone()[0] or 0
         self.db.execute(
             "INSERT INTO snapshots (ultimo_evento_id, estado, creado_en) VALUES (?, ?, ?)",
@@ -959,7 +1000,7 @@ class PiscinaPersistente(Piscina):
             desde_id, estado_json = fila
             self.cargar_dict(json.loads(estado_json))
         else:
-            Nodo._seq = 0  # los ids del log son absolutos: el replay debe
+            self._seq = 0  # la secuencia local se reconstruye desde el log
             # regenerar n1, n2... aun con otras piscinas en el proceso
 
         filas = self.db.execute(
@@ -1015,7 +1056,7 @@ class Caja:
 
     def __init__(self, piscina, filtro_ontologico=None, ventana_coocurrencia=None, rehidratar=False):
         self.piscina = piscina
-        self.filtro = filtro_ontologico or FILTRO_ONTOLOGICO_DEFAULT
+        self.filtro = FILTRO_ONTOLOGICO_DEFAULT if filtro_ontologico is None else filtro_ontologico
         self.ventana = ventana_coocurrencia if ventana_coocurrencia is not None else VENTANA_COOCURRENCIA
         self.rehidratar = rehidratar
 
@@ -1105,6 +1146,7 @@ class LaCaja:
 
     def __init__(self, filtro_ontologico=None, db_path=None, ventana_coocurrencia=None, rehidratar=False):
         self.piscina = PiscinaPersistente(db_path) if db_path else Piscina()
+        self.aliases = dict(ALIASES_SINONIMOS)
         self.piscina.rehidratar = rehidratar
         self.caja = Caja(self.piscina, filtro_ontologico, ventana_coocurrencia, rehidratar)
 
@@ -1116,20 +1158,24 @@ class LaCaja:
         return self.piscina.lote(commit_cada)
 
     def normalizar_termino(self, termino):
+
         """Resuelve una forma superficial a su concepto canonico: alias
         declarados primero; si no, morfologia derivativa segura (solo
         canoniza si la raiz ya existe como burbuja)."""
-        if termino in ALIASES_SINONIMOS:
-            return ALIASES_SINONIMOS[termino]
+        termino = termino.lower()
+        if termino in self.aliases:
+            return self.aliases[termino]
         for raiz in _raices_derivativas(termino):
             if self.piscina.existe(raiz):
                 return raiz
         return termino
 
     def declarar_sinonimo(self, forma, canon):
+        forma = forma.lower()
+        canon = canon.lower()
         """Registra un alias forma->canon en runtime (extiende
-        ALIASES_SINONIMOS)."""
-        ALIASES_SINONIMOS[forma] = canon
+        el mapa local de la instancia)."""
+        self.aliases[forma] = canon
 
     def procesar_consulta(self, texto):
         """Entrada principal: una consulta humana completa (ej:
@@ -1152,13 +1198,25 @@ class LaCaja:
         """Confianza de la relacion: 1.0 = observada (co-ocurrencia o
         arista explicita), 0.5^puentes = inferida por cierre transitivo,
         0.0 = sin relacion."""
-        return self.piscina.relacion(a, b)
+        return self.piscina.relacion(self.normalizar_termino(a), self.normalizar_termino(b))
+
+    def close(self):
+        """Cierra la persistencia; no hace nada si la piscina es efimera."""
+        if isinstance(self.piscina, PiscinaPersistente):
+            self.piscina.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        self.close()
+        return False
 
     def nivel(self, termino):
-        return self.piscina.nivel_promocion(termino)
+        return self.piscina.nivel_promocion(self.normalizar_termino(termino))
 
     def contexto_primado(self, termino, presupuesto=5):
-        return self.piscina.contexto_primado(termino, presupuesto)
+        return self.piscina.contexto_primado(self.normalizar_termino(termino), presupuesto)
 
     def stats(self):
         return self.piscina.stats()
@@ -1166,7 +1224,7 @@ class LaCaja:
     def historial(self, termino):
         """Traza dormida del termino (capa inerte): los partners con los
         que co-ocurrio y fue olvidado, con su fuerza historica."""
-        return self.piscina.historial(termino)
+        return self.piscina.historial(self.normalizar_termino(termino))
 
     def optimizar(self, max_membresias=None):
         return self.piscina.optimizar(max_membresias)

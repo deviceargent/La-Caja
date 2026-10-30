@@ -93,6 +93,10 @@ clustering, histograma de grados normalizado, diametro) y similitud =
 La similitud estructural es un hallazgo a investigar, NO una relacion:
 no crea aristas ni se interpreta semanticamente.
 
+## Instalacion
+
+La capa requiere la extra opcional: `pip install ".[cartografia]"` en el checkout, o `pip install "la-caja[cartografia]"` desde PyPI.
+
 ## Reproduccion
 
 ```powershell

@@ -21,14 +21,15 @@ English: [README.md](README.md)
 - **Confianza observado/inferido**: la navegación distingue lo
   co-ocurrido (1.0) del cierre transitivo (`0.5^puentes`). Compartir un
   término en consultas distintas NO conecta: no se inventan puentes.
-- **Olvido**: decaimiento por consolidación; las asociaciones que no se
-  repiten mueren. El primado de contexto resucita temas dormidos
-  (recuperación temporal).
+- **Olvido**: decaimiento por consolidación; las asociaciones pierden fuerza con el desuso.
+  El primado recupera asociaciones retenidas; en Enron no
+  recuperó temas ausentes durante un mes o más.
 - **Traza dormida (v0.7)**: lo olvidado no se borra — queda como traza
   inerte, clave de rehidratación por re-observación (rol honesto: NO
   predice el futuro).
+- **Cartografía**: análisis estructural de solo lectura, descubrimiento de candidatos y exportación HTML/GEXF. Requiere la extra `cartografia`.
 - **Persistencia event-sourced** (opt-in): `PiscinaPersistente` registra
-  cada mutación; un snapshot replayable reconstruye el estado exacto.
+  cada mutación; un snapshot replayable reconstruye el estado exacto. `LaCaja` ofrece `close()` y context manager para SQLite.
 
 ## Evidencia (resumen honesto)
 
@@ -68,13 +69,13 @@ Paquete de Python estándar (`la-caja`):
 
 ```
 # 1. Publicado (PyPI): una vez publicado, un solo comando
-pip install la-caja
+pip install "la-caja[cartografia]"
 
 # 2. Directo del repositorio (funciona hoy, sin esperar publicación)
-pip install git+https://github.com/deviceargent/La-Caja.git
+pip install "la-caja[cartografia] @ git+https://github.com/deviceargent/La-Caja.git"
 
 # 3. Desarrollo local: instala la copia del directorio actual
-pip install .
+pip install ".[cartografia]"
 ```
 
 Publicar a PyPI se hace tagueando el repo (`v0.7.0`) — el workflow
@@ -94,11 +95,26 @@ caja.contexto_primado("sol", 10)      # contexto asociativo a inyectar
 caja.stats()                          # terminos / nodos / aristas
 ```
 
+## Línea de comandos
+
+Después de instalar el paquete, el comando `la-caja` permite trabajar con una memoria SQLite:
+
+```powershell
+la-caja observe --db memoria.db "gravedad masa energia"
+la-caja ingest --db memoria.db observaciones.txt
+la-caja query --db memoria.db gravedad masa
+la-caja prime --db memoria.db gravedad --budget 5
+la-caja stats --db memoria.db
+la-caja cartography --db memoria.db --html mapa.html --gexf mapa.gexf
+```
+
+`ingest` lee UTF-8, una observación por línea, y confirma en lote. La cartografía requiere la extra `[cartografia]`.
+
 ## Estructura
 
 ```
 src/la_caja/        implementación (core.py)
-tests/              suite de determinismo y propiedades (53 tests)
+tests/              suite de determinismo, propiedades y CLI (82 tests)
 experiments/        falsación, evals y el writeup final (writeup.md)
 docs/               spec v2.0, addendum v2.1, acceso MCP
 docs/figures/       gráficos de barra de la evidencia (generados por experiments/graficos.py)
@@ -107,9 +123,10 @@ docs/figures/       gráficos de barra de la evidencia (generados por experiment
 ## Reproducir
 
 ```
-$env:PYTHONPATH="src"; python -m pytest tests -q        # 53/53
+python -m pytest tests -q        # 82 tests
 python experiments/exp_memoria.py enron|blog            # ver falsacion.md
 python experiments/eval_pareado_memoria.py              # la tesis (requiere OPENAI_API_KEY)
+python experiments/exp_cartografia.py                   # demo cartografica (sin API key)
 ```
 
 Los experimentos necesitan los corpus (parquet de Enron y Blog
