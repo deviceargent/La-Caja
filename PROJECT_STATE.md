@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fecha de auditoria: 2026-10-30. Rama de trabajo: `work/functionalize-core`. Commit de implementacion: `16deec5d98930bdb29de45541d2380b4e70a9bf6`. Este archivo es el punto de entrada para cualquier agente o colaborador que retome el proyecto sin historial conversacional.
+Fecha de auditoria: 2026-10-30. Rama de trabajo: `work/functionalize-core`. Commit de implementacion inicial: `16deec5d98930bdb29de45541d2380b4e70a9bf6`; ultimo commit de trabajo: `18c2608283f62f53acaa97e8ebdc9dc3533d100f`. Este archivo es el punto de entrada para cualquier agente o colaborador que retome el proyecto sin historial conversacional.
 
 ## Estado actual
 

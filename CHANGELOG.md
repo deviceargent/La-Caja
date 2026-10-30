@@ -8,7 +8,7 @@
 - Se agregan pruebas para cierre, reapertura, idempotencia y cierre durante lotes.
 - Se incorpora la CLI `la-caja` y `python -m la_caja`.
 - Las rutas de lectura de LaCaja canonizan alias como lo hace la ingesta.
-- Los IDs de nodo se asignan por Piscina, no desde un contador global compartido.
+- Los IDs de nodo se asignan por Piscina, sin incrementar el contador global de compatibilidad de `Nodo`.
 - Los alias declarados en runtime quedan aislados por instancia; un filtro ontologico vacio permite desactivar el filtro.
 - Se amplía la suite a 82 pruebas; se prueba el aislamiento de alias y el filtro configurable.
 - Se actualizan instrucciones de instalacion, CLI y reproduccion.
